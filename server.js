@@ -66,3 +66,5 @@ const httpServer = http.createServer((req, res) => {
         }
     }
 });
+
+httpServer.listen(6702);
