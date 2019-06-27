@@ -71,11 +71,12 @@ const socketServer = net.createServer(socket => {
 socketServer.listen(8080);
 
 const httpServer = http.createServer((req, res) => {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
     let query = url.parse(req.url, true).query;
     if (query != null && typeof query['mac'] !== "undefined") {
         if (clients[query['mac']] !== undefined) {
             if (typeof query['command'] !== "undefined") {
-                clients[query['mac']].setCommand(query['command'], res.end);
+                clients[query['mac']].setCommand(query['command'], result => res.end(result));
             } else {
                 res.end("Unknown operation");
             }
