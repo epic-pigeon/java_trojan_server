@@ -3,8 +3,6 @@ const http = require('http');
 const url = require('url');
 
 class Client {
-    ip; port; socket; onCommandChange; _command;
-
     constructor(socket, onCommandChange) {
         this.ip = socket.remoteAddress;
         this.port = socket.remotePort;
@@ -17,6 +15,10 @@ class Client {
         if (typeof this.onCommandChange === "function") {
             this.onCommandChange(command);
         }
+    }
+
+    getCommand() {
+        return this._command;
     }
 }
 
