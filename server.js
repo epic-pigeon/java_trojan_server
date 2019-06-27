@@ -53,7 +53,7 @@ socketServer.listen(8080);
 
 const httpServer = http.createServer((req, res) => {
     let query = url.parse(req.url).query;
-    if (typeof query['mac'] !== "undefined") {
+    if (query != null && typeof query['mac'] !== "undefined") {
         if (clients[query['mac']] !== undefined) {
             if (typeof query['command'] !== "undefined") {
                 clients[query['mac']].setCommand(query['command']);
@@ -64,6 +64,8 @@ const httpServer = http.createServer((req, res) => {
         } else {
             res.end('Such mac is not connected');
         }
+    } else {
+        res.end("fuck you");
     }
 });
 
