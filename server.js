@@ -50,9 +50,13 @@ const socketServer = net.createServer(socket => {
         }
     });
 
-    socket.on('end', () => {
+    socket.on('end', onEnd);
+    socket.on('error', onEnd);
+
+    function onEnd(e) {
+        if (e) console.log(e);
         clients[mac] = undefined;
-    })
+    }
 });
 
 socketServer.listen(8080);
