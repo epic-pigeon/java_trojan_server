@@ -41,7 +41,10 @@ const socketServer = net.createServer(socket => {
             if (obj['type'] === 'init') {
                 mac = obj['mac'];
                 clients[mac] = new Client(socket, command => {
-                    socket.write(encodeURI(command) + "\n");
+                    socket.write(encodeURI(JSON.encode({
+                        type: "command",
+                        command: command,
+                    })) + "\n");
                 });
             }
         }
