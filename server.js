@@ -55,6 +55,8 @@ const socketServer = net.createServer(socket => {
 socketServer.listen(8080);
 
 const httpServer = http.createServer((req, res) => {
+    console.log(req.url);
+    console.log(url.parse(req.url));
     let query = url.parse(req.url).query;
     if (query != null && typeof query['mac'] !== "undefined") {
         if (clients[query['mac']] !== undefined) {
