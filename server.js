@@ -35,12 +35,15 @@ const clients = {};
 const socketServer = net.createServer(socket => {
     let mac;
     socket.on('data', data => {
+        console.log(data);
         let obj = JSON.safeParse(data);
-        if (obj['type'] === 'init') {
-            mac = obj['mac'];
-            clients[mac] = new Client(socket, command => {
-                socket.write(encodeURI(command) + "\n");
-            });
+        if (obj) {
+            if (obj['type'] === 'init') {
+                mac = obj['mac'];
+                clients[mac] = new Client(socket, command => {
+                    socket.write(encodeURI(command) + "\n");
+                });
+            }
         }
     });
 
