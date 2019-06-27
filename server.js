@@ -39,7 +39,6 @@ const clients = {};
 const socketServer = net.createServer(socket => {
     let mac, client;
     socket.on('data', data => {
-        console.log(data.toString());
         let obj = JSON.safeParse(data.toString());
         if (obj) {
             if (obj['type'] === 'init') {
@@ -50,8 +49,8 @@ const socketServer = net.createServer(socket => {
                         command: command,
                     })) + "\n");
                 });
+                console.log("Client " + mac + " connected!");
             } else if (obj['type'] === "result") {
-                console.log(obj['result']);
                 if (typeof client.onComplete === "function") {
                     client.onComplete(obj['result']);
                 }
@@ -65,6 +64,7 @@ const socketServer = net.createServer(socket => {
     function onEnd(e) {
         if (e) console.log(e);
         clients[mac] = undefined;
+        console.log("Client " + mac + " disconnected!");
     }
 });
 
