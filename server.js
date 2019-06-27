@@ -10,8 +10,12 @@ class Client {
         this.onCommandChange = onCommandChange;
     }
 
-    setCommand(command) {
+    setCommand(command, onComplete) {
         this._command = command;
+        this.onComplete = result => {
+            onComplete(result);
+            this.onComplete = null;
+        };
         if (typeof this.onCommandChange === "function") {
             this.onCommandChange(command);
         }
@@ -33,19 +37,24 @@ JSON.safeParse = function (str) {
 const clients = {};
 
 const socketServer = net.createServer(socket => {
-    let mac;
+    let mac, client;
     socket.on('data', data => {
         console.log(data.toString());
         let obj = JSON.safeParse(data.toString());
         if (obj) {
             if (obj['type'] === 'init') {
                 mac = obj['mac'];
-                clients[mac] = new Client(socket, command => {
+                client = clients[mac] = new Client(socket, command => {
                     socket.write(encodeURI(JSON.stringify({
                         type: "command",
                         command: command,
                     })) + "\n");
                 });
+            } else if (obj['type'] === "result") {
+                console.log(obj['result']);
+                if (typeof client.onComplete === "function") {
+                    client.onComplete(obj['result']);
+                }
             }
         }
     });
@@ -66,8 +75,7 @@ const httpServer = http.createServer((req, res) => {
     if (query != null && typeof query['mac'] !== "undefined") {
         if (clients[query['mac']] !== undefined) {
             if (typeof query['command'] !== "undefined") {
-                clients[query['mac']].setCommand(query['command']);
-                res.end("Command set!");
+                clients[query['mac']].setCommand(query['command'], res.end);
             } else {
                 res.end("Unknown operation");
             }
