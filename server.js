@@ -3,10 +3,11 @@ const http = require('http');
 const url = require('url');
 
 class Client {
-    constructor(socket, onCommandChange) {
+    constructor(socket, os, onCommandChange) {
         this.ip = socket.remoteAddress;
         this.port = socket.remotePort;
         this.socket = socket;
+        this.os = os;
         this.onCommandChange = onCommandChange;
     }
 
@@ -37,19 +38,20 @@ JSON.safeParse = function (str) {
 const clients = {};
 
 const socketServer = net.createServer(socket => {
-    let mac, client;
+    let mac, client, os;
     socket.on('data', data => {
         let obj = JSON.safeParse(data.toString());
         if (obj) {
             if (obj['type'] === 'init') {
                 mac = obj['mac'];
-                client = clients[mac] = new Client(socket, command => {
+                os = obj['os'];
+                client = clients[mac] = new Client(socket, os, command => {
                     socket.write(encodeURI(JSON.stringify({
                         type: "command",
                         command: command,
                     })) + "\n");
                 });
-                console.log("Client " + mac + " connected!");
+                console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
             } else if (obj['type'] === "result") {
                 if (typeof client.onComplete === "function") {
                     client.onComplete(obj['result']);
