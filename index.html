@@ -47,10 +47,12 @@
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
                 let command = document.querySelector("#command");
-                query({
+                let data = {
                     mac: mac,
                     command: command,
-                });
+                };
+                console.log(data);
+                query(data);
             };
         }
     </script>
