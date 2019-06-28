@@ -89,7 +89,7 @@ const httpServer = http.createServer((req, res) => {
                 if (typeof query['command'] !== "undefined") {
                     clients[query['mac']].setCommand(query['command'], result => res.end(result));
                 } else if (typeof query['psl'] !== "undefined") {
-                    clients[query['mac']].setCommand(query['command'], result => res.end(result), true);
+                    clients[query['mac']].setCommand(query['psl'], result => res.end(result), true);
                 } else {
                     res.end("Unknown operation");
                 }
