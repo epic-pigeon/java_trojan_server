@@ -54,7 +54,7 @@
                 console.log(data);
                 query(data, result => {
                     console.log(result);
-                    document.querySelector("#result").innerText = result;
+                    document.querySelector("#result").innerText = result.replace(/\r?\n/g, '<br />');
                 });
             };
         }
