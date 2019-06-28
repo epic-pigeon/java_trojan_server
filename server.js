@@ -73,10 +73,10 @@ const socketServer = net.createServer(socket => {
 socketServer.listen(8080);
 
 const httpServer = http.createServer((req, res) => {
-    res.writeHead(200, {'Content-Type': 'text/plain'});
     let query = url.parse(req.url, true).query;
     if (query != null) {
         if (typeof query['mac'] !== "undefined") {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
             if (clients[query['mac']] !== undefined) {
                 if (typeof query['command'] !== "undefined") {
                     clients[query['mac']].setCommand(query['command'], result => res.end(result));
@@ -87,6 +87,7 @@ const httpServer = http.createServer((req, res) => {
                 res.end('Such mac is not connected');
             }
         } else if (typeof query['clients'] !== "undefined") {
+            res.writeHead(200, {'Content-Type': 'text/plain'});
             let obj = [];
             for (let mac in clients) {
                 if (clients.hasOwnProperty(mac)) {
@@ -99,7 +100,8 @@ const httpServer = http.createServer((req, res) => {
                 }
             }
             res.end(JSON.stringify(obj));
-        } else if (typeof query['clients'] !== "undefined") {
+        } else if (typeof query['control'] !== "undefined") {
+            res.writeHead(200, {'Content-Type': 'text/html'});
             fs.readFile("index.html", "utf8", (err, data) => {
                 if (err) {
                     res.end(err.toString());
