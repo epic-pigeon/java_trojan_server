@@ -50,9 +50,10 @@ const socketServer = net.createServer(socket => {
                         type: "command",
                         command: command,
                     })) + "\n"); else {
+                        console.log(command);
                         let str = encodeURI(JSON.stringify({
                             type: "psl",
-                            program: command,
+                            command: command,
                         })) + "\n";
                         console.log(str);
                         socket.write(str)
