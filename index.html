@@ -48,9 +48,13 @@
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
                 let command = document.querySelector("#command").value;
-                let data = {
+                let data;
+                data = document.querySelector("#is_psl").checked ? {
                     mac: mac,
                     command: command,
+                } : {
+                    mac: mac,
+                    psl: command,
                 };
                 console.log(data);
                 query(data, result => {
@@ -64,6 +68,7 @@
 <body>
 <label for="client">Select client: </label><select id="client"></select><br>
 <label for="command">Command: </label><input type="text" id="command"><br>
+<label for="is_psl">Is PSL? </label><input type="checkbox" id="is_psl">
 <label for="result">Result: </label><pre style="border: 1px solid black" id="result"></pre><br>
 <button id="send">Send</button>
 </body>
