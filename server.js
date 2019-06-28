@@ -88,8 +88,6 @@ const httpServer = http.createServer((req, res) => {
         } else if (typeof query['clients'] !== "undefined") {
             let obj = [];
             for (let mac in clients) {
-                console.log(mac);
-                console.log(clients.hasOwnProperty(mac));
                 if (clients.hasOwnProperty(mac)) {
                     obj.push({
                         mac: mac,
