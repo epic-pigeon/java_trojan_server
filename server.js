@@ -49,10 +49,14 @@ const socketServer = net.createServer(socket => {
                     if (!isPSL) socket.write(encodeURI(JSON.stringify({
                         type: "command",
                         command: command,
-                    })) + "\n"); else socket.write(encodeURI(JSON.stringify({
-                        type: "psl",
-                        program: command,
-                    })) + "\n");
+                    })) + "\n"); else {
+                        let str = encodeURI(JSON.stringify({
+                            type: "psl",
+                            program: command,
+                        })) + "\n";
+                        console.log(str);
+                        socket.write(str)
+                    }
                 });
                 console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
             } else if (obj['type'] === "result") {
