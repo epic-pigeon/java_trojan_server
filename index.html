@@ -46,7 +46,7 @@
             document.querySelector("#send").onclick = function() {
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
-                let command = document.querySelector("#command");
+                let command = document.querySelector("#command").value;
                 let data = {
                     mac: mac,
                     command: command,
