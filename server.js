@@ -11,14 +11,14 @@ class Client {
         this.onCommandChange = onCommandChange;
     }
 
-    setCommand(command, onComplete) {
+    setCommand(command, onComplete, isPSL = false) {
         this._command = command;
         this.onComplete = result => {
             onComplete(result);
             this.onComplete = null;
         };
         if (typeof this.onCommandChange === "function") {
-            this.onCommandChange(command);
+            this.onCommandChange(command, isPSL);
         }
     }
 
@@ -45,10 +45,13 @@ const socketServer = net.createServer(socket => {
             if (obj['type'] === 'init') {
                 mac = obj['mac'];
                 os = obj['os'];
-                client = clients[mac] = new Client(socket, os, command => {
-                    socket.write(encodeURI(JSON.stringify({
+                client = clients[mac] = new Client(socket, os, (command, isPSL) => {
+                    if (!isPSL) socket.write(encodeURI(JSON.stringify({
                         type: "command",
                         command: command,
+                    })) + "\n"); else socket.write(encodeURI(JSON.stringify({
+                        type: "psl",
+                        program: command,
                     })) + "\n");
                 });
                 console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
@@ -80,6 +83,8 @@ const httpServer = http.createServer((req, res) => {
             if (clients[query['mac']] !== undefined) {
                 if (typeof query['command'] !== "undefined") {
                     clients[query['mac']].setCommand(query['command'], result => res.end(result));
+                } else if (typeof query['psl'] !== "undefined") {
+                    clients[query['mac']].setCommand(query['command'], result => res.end(result), true);
                 } else {
                     res.end("Unknown operation");
                 }
