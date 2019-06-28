@@ -98,7 +98,7 @@ const httpServer = http.createServer((req, res) => {
             res.writeHead(200, {'Content-Type': 'text/plain'});
             let obj = [];
             for (let mac in clients) {
-                if (clients.hasOwnProperty(mac)) {
+                if (clients.hasOwnProperty(mac) && typeof clients[mac] !== "undefined") {
                     obj.push({
                         mac: mac,
                         ip: clients[mac].ip,
