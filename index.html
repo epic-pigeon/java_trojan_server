@@ -53,6 +53,7 @@
                 };
                 console.log(data);
                 query(data, result => {
+                    console.log(result);
                     document.querySelector("#result").innerText = result;
                 });
             };
