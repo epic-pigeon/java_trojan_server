@@ -49,7 +49,7 @@
                 let mac = e.options[e.selectedIndex].value;
                 let command = document.querySelector("#command").value;
                 let data;
-                data = document.querySelector("#is_psl").checked ? {
+                data = !document.querySelector("#is_psl").checked ? {
                     mac: mac,
                     command: command,
                 } : {
