@@ -6,7 +6,6 @@ class Client {
     constructor(socket, os, onCommandChange) {
         this.ip = socket.remoteAddress;
         this.port = socket.remotePort;
-        this.socket = socket;
         this.os = os;
         this.onCommandChange = onCommandChange;
     }
@@ -89,13 +88,16 @@ const httpServer = http.createServer((req, res) => {
         } else if (typeof query['clients'] !== "undefined") {
             let obj = [];
             for (let mac in clients) {
-                if (clients.hasOwnProperty(mac))
+                console.log(mac);
+                console.log(clients.hasOwnProperty(mac));
+                if (clients.hasOwnProperty(mac)) {
                     obj.push({
                         mac: mac,
                         ip: clients[mac].ip,
                         port: clients[mac].port,
                         os: clients[mac].os,
                     });
+                }
             }
             res.end(JSON.stringify(obj));
         } else {
