@@ -52,7 +52,9 @@
                     command: command,
                 };
                 console.log(data);
-                query(data);
+                query(data, result => {
+                    document.querySelector("#result").innerText = result;
+                });
             };
         }
     </script>
@@ -60,6 +62,7 @@
 <body>
 <label for="client">Select client: </label><select id="client"></select><br>
 <label for="command">Command: </label><input type="text" id="command"><br>
+<label for="result">Result: </label><textarea readonly id="result"></textarea><br>
 <button id="send">Send</button>
 </body>
 </html>
