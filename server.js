@@ -1,6 +1,7 @@
 const net = require('net');
 const http = require('http');
 const url = require('url');
+const fs = require("fs");
 
 class Client {
     constructor(socket, os, onCommandChange) {
@@ -98,6 +99,14 @@ const httpServer = http.createServer((req, res) => {
                 }
             }
             res.end(JSON.stringify(obj));
+        } else if (typeof query['clients'] !== "undefined") {
+            fs.readFile("index.html", "utf8", (err, data) => {
+                if (err) {
+                    res.end(err.toString());
+                } else {
+                    res.end(data.toString());
+                }
+            });
         } else {
             res.end("fuck you");
         }
