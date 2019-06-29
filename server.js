@@ -107,8 +107,7 @@ const httpServer = http.createServer((req, res) => {
                 } else if (typeof query['screenshot'] !== "undefined") {
                     res.writeHead(200, {'Content-Type': 'image/png'});
                     clients[query['mac']].takeScreenshot(result => {
-                        console.log("got");
-                        res.end(Buffer.from(result['base64'], 'base64').toString());
+                        res.end(Buffer.from(result['base64'], 'base64'));
                     });
                 } else {
                     res.end("Unknown operation");
