@@ -22,11 +22,19 @@ class Client {
         }
     }
 
-    request(type, data, onComplete) {
+    request(type, data, onComplete, onError) {
         let id = this.currentID++;
         this.onCompletedArray.push(function(result) {
             if (result['id'] == id) {
-                onComplete(result);
+                if (result['success']) {
+                    onComplete(result);
+                } else {
+                    if (typeof onError === "function") {
+                        onError(new Error(result['error']))
+                    } else {
+                        throw new Error(result['error'])
+                    }
+                }
                 return true;
             }
             return false;
@@ -36,21 +44,21 @@ class Client {
         this.doRequest(data);
     }
 
-    setCommand(command, onComplete, isPSL = false) {
+    setCommand(command, onComplete, isPSL = false, onError) {
         isPSL = !!isPSL;
         this.request(isPSL ? "psl" : "command", {
             command: command
-        }, onComplete);
+        }, onComplete, onError);
     }
 
-    takeScreenshot(onComplete) {
-        this.request("screenshot", {}, onComplete);
+    takeScreenshot(onComplete, onError) {
+        this.request("screenshot", {}, onComplete, onError);
     }
 
-    getFile(path, onComplete) {
+    getFile(path, onComplete, onError) {
         this.request("get_file", {
             "path": path
-        }, onComplete);
+        }, onComplete, onError);
     }
 }
 
@@ -102,35 +110,45 @@ socketServer.listen(8080);
 
 const httpServer = http.createServer((req, res) => {
     let query = url.parse(req.url, true).query;
+    function handleError(err) {
+        res.writeHead(403, {'Content-Type': 'text/html'});
+        res.end("Error: " + err.toString());
+    }
     if (query != null) {
         if (typeof query['mac'] !== "undefined") {
             if (clients[query['mac']] !== undefined) {
                 if (typeof query['command'] !== "undefined") {
-                    res.writeHead(200, {'Content-Type': 'text/plain'});
-                    clients[query['mac']].setCommand(query['command'], result => res.end(result['result']));
+                    clients[query['mac']].setCommand(query['command'], result => {
+                        res.writeHead(200, {'Content-Type': 'text/plain'});
+                        res.end(result['result']);
+                    }, handleError());
                 } else if (typeof query['psl'] !== "undefined") {
-                    res.writeHead(200, {'Content-Type': 'text/plain'});
-                    clients[query['mac']].setCommand(query['psl'], result => res.end(result['result']), true);
+                    clients[query['mac']].setCommand(query['psl'], result => {
+                        res.end(result['result']);
+                        res.writeHead(200, {'Content-Type': 'text/plain'});
+                    }, true, handleError);
                 } else if (typeof query['screenshot'] !== "undefined") {
-                    res.writeHead(200, {'Content-Type': 'image/png'});
                     clients[query['mac']].takeScreenshot(result => {
+                        res.writeHead(200, {'Content-Type': 'image/png'});
                         res.end(Buffer.from(result['base64'], 'base64'));
-                    });
+                    }, handleError);
                 } else if (typeof query['path'] !== "undefined") {
-                    res.writeHead(200, {
-                        'Content-Type': 'application/octet-stream',
-                        'Content-Disposition': `attachment; filename=${(() => {
-                            let arr = query['path'].split(/[\\/]/);
-                            return arr[arr.length - 1];
-                        })()}`
-                    });
                     clients[query['mac']].getFile(query["path"], result => {
+                        res.writeHead(200, {
+                            'Content-Type': 'application/octet-stream',
+                            'Content-Disposition': `attachment; filename=${(() => {
+                                let arr = query['path'].split(/[\\/]/);
+                                return arr[arr.length - 1];
+                            })()}`
+                        });
                         res.end(Buffer.from(result['base64'], 'base64'));
-                    });
+                    }, handleError);
                 } else {
+                    res.writeHead(403, {'Content-Type': 'text/html'});
                     res.end("Unknown operation");
                 }
             } else {
+                res.writeHead(403, {'Content-Type': 'text/html'});
                 res.end('Such mac is not connected');
             }
         } else if (typeof query['clients'] !== "undefined") {
