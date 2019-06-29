@@ -62,7 +62,6 @@ const socketServer = net.createServer(socket => {
     socket.on('data', chunk => {
         if (chunk.toString().charAt(chunk.toString().length - 1) === "}") {
             fullData += chunk.toString();
-            console.log(fullData);
             let obj = JSON.safeParse(fullData);
             fullData = "";
             if (obj) {
@@ -74,7 +73,6 @@ const socketServer = net.createServer(socket => {
                     });
                     console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
                 } else if (obj['type'] === "result") {
-                    console.log(obj);
                     client.onRequestCompleted(obj);
                 }
             }
@@ -110,7 +108,7 @@ const httpServer = http.createServer((req, res) => {
                     res.writeHead(200, {'Content-Type': 'image/png'});
                     clients[query['mac']].takeScreenshot(result => {
                         console.log("got");
-                        res.end(atob(result['base64']));
+                        res.end(Buffer.from(result['base64'], 'base64').toString());
                     });
                 } else {
                     res.end("Unknown operation");
