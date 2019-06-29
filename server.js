@@ -45,6 +45,12 @@ class Client {
     takeScreenshot(onComplete) {
         this.request("screenshot", {}, onComplete);
     }
+
+    getFile(path, onComplete) {
+        this.request("get_file", {
+            "path": path
+        }, onComplete);
+    }
 }
 
 JSON.safeParse = function (str) {
@@ -107,6 +113,11 @@ const httpServer = http.createServer((req, res) => {
                 } else if (typeof query['screenshot'] !== "undefined") {
                     res.writeHead(200, {'Content-Type': 'image/png'});
                     clients[query['mac']].takeScreenshot(result => {
+                        res.end(Buffer.from(result['base64'], 'base64'));
+                    });
+                } else if (typeof query['path'] !== "undefined") {
+                    res.writeHead(200, {'Content-Type': 'application/octet-stream'});
+                    clients[query['mac']].getFile(query["path"], result => {
                         res.end(Buffer.from(result['base64'], 'base64'));
                     });
                 } else {
