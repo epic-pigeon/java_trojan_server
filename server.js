@@ -60,7 +60,7 @@ const clients = {};
 const socketServer = net.createServer(socket => {
     let mac, client, os, fullData = "";
     socket.on('data', chunk => {
-        if (chunk.toString().charAt(chunk.toString().length) === "}") {
+        if (chunk.toString().charAt(chunk.toString().length - 1) === "}") {
             fullData += chunk.toString();
             console.log(fullData);
             let obj = JSON.safeParse(fullData);
