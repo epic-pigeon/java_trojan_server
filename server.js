@@ -60,6 +60,7 @@ const clients = {};
 const socketServer = net.createServer(socket => {
     let mac, client, os;
     socket.on('data', data => {
+        console.log(data.toString());
         let obj = JSON.safeParse(data.toString());
         if (obj) {
             if (obj['type'] === 'init') {
