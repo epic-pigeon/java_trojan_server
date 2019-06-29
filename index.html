@@ -49,6 +49,7 @@
                 }
             });
             document.querySelector("#send").onclick = function() {
+                document.querySelector("#result").innerHTML = "";
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
                 let command = document.querySelector("#command").value;
@@ -67,13 +68,16 @@
                 });
             };
             document.querySelector("#screenshot").onclick = function() {
+                document.querySelector("#result").innerHTML = "";
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
                 let img = document.createElement("img");
                 img.src = getUrl({
                     mac: mac,
-                    screenshot: ""
+                    screenshot: "",
+                    kar: new Date().getTime()
                 });
+                img.width = 1000;
                 document.querySelector("#result").appendChild(img);
             }
         }
