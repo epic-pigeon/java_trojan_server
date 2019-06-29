@@ -28,8 +28,8 @@
             let xhr = new XMLHttpRequest();
             xhr.open("GET", url);
             xhr.onreadystatechange = function () {
-                if(xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
-                    if (typeof callback === "function") callback(xhr.responseText);
+                if(xhr.readyState === XMLHttpRequest.DONE) {
+                    if (typeof callback === "function") callback(xhr.responseText, xhr.status);
                 }
             };
             xhr.onerror = e => console.log(e);
@@ -37,7 +37,7 @@
         }
 
         window.onload = function() {
-            query({"clients": "kar"}, data => {
+            query({"clients": "kar"}, (data) => {
                 let arr = JSON.safeParse(data);
                 if (arr) {
                     for (let client of arr) {
@@ -62,9 +62,10 @@
                     psl: command,
                 };
                 console.log(data);
-                query(data, result => {
-                    console.log(result);
-                    document.querySelector("#result").innerText = result;
+                query(data, (result, code) => {
+                    if (code === 200) {
+                        document.querySelector("#result").innerText = result;
+                    } else alert("error: " + result);
                 });
             };
             document.querySelector("#screenshot").onclick = function() {
@@ -79,7 +80,20 @@
                 });
                 img.width = 1000;
                 document.querySelector("#result").appendChild(img);
-            }
+            };
+            document.querySelector("#download").onclick = function() {
+                document.querySelector("#result").innerHTML = "";
+                let e = document.querySelector("#client");
+                let mac = e.options[e.selectedIndex].value;
+                let path = document.querySelector("#path").value;
+                let a = document.createElement("a");
+                a.href = getUrl({
+                    mac: mac,
+                    path: path
+                });
+                a.target = "_blank";
+                document.querySelector("#result").appendChild(a);
+            };
         }
     </script>
 </head>
@@ -87,7 +101,9 @@
 <label for="client">Select client: </label><select id="client"></select><br>
 <label for="command">Command: </label><textarea id="command"></textarea><br>
 <label for="is_psl">Is PSL? </label><input type="checkbox" id="is_psl"><br>
-<button id="send">Send</button><button id="screenshot">Screenshot</button><br>
+<button id="send">Send</button><br>
+<button id="screenshot">Screenshot</button><br>
+<label for="path">Path: </label><input type="text" id="path"><button id="download">Download</button>
 <label for="result">Result: </label><pre style="border: 1px solid black" id="result"></pre>
 </body>
 </html>
