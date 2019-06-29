@@ -58,24 +58,27 @@ JSON.safeParse = function (str) {
 const clients = {};
 
 const socketServer = net.createServer(socket => {
-    let mac, client, os;
-    socket.on('data', data => {
-        console.log(data.toString());
-        let obj = JSON.safeParse(data.toString());
-        console.log(obj);
-        if (obj) {
-            if (obj['type'] === 'init') {
-                mac = obj['mac'];
-                os = obj['os'];
-                client = clients[mac] = new Client(socket, os, (data) => {
-                    socket.write(encodeURI(JSON.stringify(data)) + "\n");
-                });
-                console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
-            } else if (obj['type'] === "result") {
-                console.log(obj);
-                client.onRequestCompleted(obj);
+    let mac, client, os, fullData = "";
+    socket.on('data', chunk => {
+        if (chunk.toString().charAt(chunk.toString().length) === "}") {
+            fullData += chunk.toString();
+            console.log(fullData);
+            let obj = JSON.safeParse(fullData);
+            fullData = "";
+            if (obj) {
+                if (obj['type'] === 'init') {
+                    mac = obj['mac'];
+                    os = obj['os'];
+                    client = clients[mac] = new Client(socket, os, (data) => {
+                        socket.write(encodeURI(JSON.stringify(data)) + "\n");
+                    });
+                    console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
+                } else if (obj['type'] === "result") {
+                    console.log(obj);
+                    client.onRequestCompleted(obj);
+                }
             }
-        }
+        } else fullData += chunk.toString();
     });
 
     socket.on('end', onEnd);
