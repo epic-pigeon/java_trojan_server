@@ -62,6 +62,7 @@ const socketServer = net.createServer(socket => {
     socket.on('data', data => {
         console.log(data.toString());
         let obj = JSON.safeParse(data.toString());
+        console.log(obj);
         if (obj) {
             if (obj['type'] === 'init') {
                 mac = obj['mac'];
@@ -82,8 +83,10 @@ const socketServer = net.createServer(socket => {
 
     function onEnd(e) {
         if (e) console.log(e);
-        clients[mac] = undefined;
-        console.log("Client " + mac + " disconnected!");
+        if (clients[mac] !== undefined) {
+            clients[mac] = undefined;
+            console.log("Client " + mac + " disconnected!");
+        }
     }
 });
 
