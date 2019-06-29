@@ -121,7 +121,7 @@ const httpServer = http.createServer((req, res) => {
                     clients[query['mac']].setCommand(query['command'], result => {
                         res.writeHead(200, {'Content-Type': 'text/plain'});
                         res.end(result['result']);
-                    }, handleError());
+                    }, handleError);
                 } else if (typeof query['psl'] !== "undefined") {
                     clients[query['mac']].setCommand(query['psl'], result => {
                         res.end(result['result']);
