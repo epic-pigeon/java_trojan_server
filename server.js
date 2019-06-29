@@ -70,6 +70,7 @@ const socketServer = net.createServer(socket => {
                 });
                 console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
             } else if (obj['type'] === "result") {
+                console.log(obj);
                 client.onRequestCompleted(obj);
             }
         }
@@ -101,6 +102,7 @@ const httpServer = http.createServer((req, res) => {
                 } else if (typeof query['screenshot'] !== "undefined") {
                     res.writeHead(200, {'Content-Type': 'image/png'});
                     clients[query['mac']].takeScreenshot(result => {
+                        console.log("got");
                         res.end(atob(result['base64']));
                     });
                 } else {
