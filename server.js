@@ -31,6 +31,7 @@ class Client {
             return false;
         });
         data['type'] = type;
+        data['id'] = id;
         this.doRequest(data);
     }
 
