@@ -2,6 +2,7 @@ const net = require('net');
 const http = require('http');
 const url = require('url');
 const fs = require("fs");
+const path = require("path");
 
 class Client {
     constructor(socket, os, doRequest) {
@@ -116,7 +117,10 @@ const httpServer = http.createServer((req, res) => {
                         res.end(Buffer.from(result['base64'], 'base64'));
                     });
                 } else if (typeof query['path'] !== "undefined") {
-                    res.writeHead(200, {'Content-Type': 'application/octet-stream'});
+                    res.writeHead(200, {
+                        'Content-Type': 'application/octet-stream',
+                        'Content-Disposition': `attachment; filename='${path.basename(query['path'])}'`
+                    });
                     clients[query['mac']].getFile(query["path"], result => {
                         res.end(Buffer.from(result['base64'], 'base64'));
                     });
