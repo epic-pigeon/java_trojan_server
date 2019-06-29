@@ -99,9 +99,9 @@ const httpServer = http.createServer((req, res) => {
                     res.writeHead(200, {'Content-Type': 'text/plain'});
                     clients[query['mac']].setCommand(query['psl'], result => res.end(result['result']), true);
                 } else if (typeof query['screenshot'] !== "undefined") {
-                    res.writeHead(200, {'Content-Type': 'image/png'});
+                    res.writeHead(200, {'Content-Type': 'text/plain'});
                     clients[query['mac']].takeScreenshot(result => {
-                        res.end(atob(result['base64']));
+                        res.end(result['base64']);
                     });
                 } else {
                     res.end("Unknown operation");
