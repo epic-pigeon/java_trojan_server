@@ -101,6 +101,7 @@ const httpServer = http.createServer((req, res) => {
                 } else if (typeof query['screenshot'] !== "undefined") {
                     res.writeHead(200, {'Content-Type': 'text/plain'});
                     clients[query['mac']].takeScreenshot(result => {
+                        console.log("got");
                         res.end(result['base64']);
                     });
                 } else {
