@@ -134,6 +134,7 @@ const httpServer = http.createServer((req, res) => {
                     }, handleError);
                 } else if (typeof query['path'] !== "undefined") {
                     clients[query['mac']].getFile(query["path"], result => {
+                        console.log(result['base64'].length);
                         let decoded = Buffer.from(result['base64'], 'base64');
                         /*res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
