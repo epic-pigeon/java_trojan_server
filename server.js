@@ -136,7 +136,7 @@ const httpServer = http.createServer((req, res) => {
                     clients[query['mac']].getFile(query["path"], result => {
                         let decoded = Buffer.from(result['base64'], 'base64');
                         res.writeHead(200, {
-                            'Content-Type': mime.lookup(query['path']),
+                            'Content-Type': mime.lookup(query['path']) || 'application/octet-stream',
                             'Content-Disposition': `attachment; filename=${(() => {
                                 let arr = query['path'].split(/[\\/]/);
                                 return arr[arr.length - 1];
