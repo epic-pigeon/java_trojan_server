@@ -2,7 +2,7 @@ const net = require('net');
 const http = require('http');
 const url = require('url');
 const fs = require("fs");
-const path = require("path");
+const mime = require("mime-types");
 
 class Client {
     constructor(socket, os, doRequest) {
@@ -135,19 +135,19 @@ const httpServer = http.createServer((req, res) => {
                 } else if (typeof query['path'] !== "undefined") {
                     clients[query['mac']].getFile(query["path"], result => {
                         let decoded = Buffer.from(result['base64'], 'base64');
-                        /*res.writeHead(200, {
-                            'Content-Type': 'application/octet-stream',
+                        res.writeHead(200, {
+                            'Content-Type': mime.lookup(query['path']),
                             'Content-Disposition': `attachment; filename=${(() => {
                                 let arr = query['path'].split(/[\\/]/);
                                 return arr[arr.length - 1];
                             })()}`
-                        });*/
-                        res.writeHead(200, {'Content-Type': 'text/plain'});
-                        fs.writeFile((() => {
+                        });
+                        //res.writeHead(200, {'Content-Type': 'text/plain'});
+                        /*fs.writeFile((() => {
                             let arr = query['path'].split(/[\\/]/);
                             return arr[arr.length - 1];
-                        })(), decoded, () => {});
-                        res.end(decoded, "binary");
+                        })(), decoded, () => {});*/
+                        res.end(decoded);
                         //res.end(result['base64']);
                     }, handleError);
                 } else {
