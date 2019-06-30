@@ -86,21 +86,14 @@
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
                 let path = document.querySelector("#path").value;
-                query({
+                let a = document.createElement("a");
+                a.target = "_blank";
+                a.innerText = "Download";
+                a.href = getUrl({
                     mac: mac,
                     path: path
-                }, result => {
-                    let a = document.createElement("a");
-                    a.target = "_blank";
-                    a.download = (() => {
-                        let arr = path.split(/[\\/]/);
-                        return arr[arr.length - 1];
-                    })();
-                    a.innerText = "Download";
-                    console.log(result);
-                    a.href = URL.createObjectURL(new Blob([result.replace(/([^\r])\n/g, "$1\r\n")]));
-                    document.querySelector("#result").appendChild(a);
                 });
+                document.querySelector("#result").appendChild(a);
             };
         }
     </script>
