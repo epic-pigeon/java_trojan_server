@@ -98,7 +98,8 @@
                     })();
                     a.innerText = "Download";
                     console.log(result);
-                    a.href = URL.createObjectURL(new Blob([result]));
+                    a.href = //URL.createObjectURL(new Blob([result]));
+                             "data:application/octet-stream;base64," + result;
                     document.querySelector("#result").appendChild(a);
                 });
             };

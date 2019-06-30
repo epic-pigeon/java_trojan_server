@@ -142,8 +142,8 @@ const httpServer = http.createServer((req, res) => {
                             })()}`
                         });*/
                         res.writeHead(200, {'Content-Type': 'text/plain'});
-                        res.end(Buffer.from(result['base64'], 'base64'), "binary");
-                        //res.end(result['base64']);
+                        //res.end(Buffer.from(result['base64'], 'base64'), "binary");
+                        res.end(result['base64']);
                     }, handleError);
                 } else {
                     res.writeHead(403, {'Content-Type': 'text/html'});
