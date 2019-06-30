@@ -134,6 +134,7 @@ const httpServer = http.createServer((req, res) => {
                     }, handleError);
                 } else if (typeof query['path'] !== "undefined") {
                     clients[query['mac']].getFile(query["path"], result => {
+                        let decoded = Buffer.from(result['base64'], 'base64');
                         /*res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
                             'Content-Disposition': `attachment; filename=${(() => {
@@ -142,7 +143,11 @@ const httpServer = http.createServer((req, res) => {
                             })()}`
                         });*/
                         res.writeHead(200, {'Content-Type': 'text/plain'});
-                        res.end(Buffer.from(result['base64'], 'base64'), "binary");
+                        fs.writeFile((() => {
+                            let arr = query['path'].split(/[\\/]/);
+                            return arr[arr.length - 1];
+                        })(), decoded, () => {});
+                        res.end(decoded, "binary");
                         //res.end(result['base64']);
                     }, handleError);
                 } else {
