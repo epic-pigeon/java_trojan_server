@@ -134,10 +134,7 @@ const httpServer = http.createServer((req, res) => {
                     }, handleError);
                 } else if (typeof query['path'] !== "undefined") {
                     clients[query['mac']].getFile(query["path"], result => {
-                        console.log(result['base64'].length);
-                        console.log(result['base64'].substring(result['base64'].length - 100));
                         let decoded = Buffer.from(result['base64'], 'base64');
-                        console.log(decoded.toString().length);
                         /*res.writeHead(200, {
                             'Content-Type': 'application/octet-stream',
                             'Content-Disposition': `attachment; filename=${(() => {
