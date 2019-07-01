@@ -95,6 +95,24 @@
                 });
                 document.querySelector("#result").appendChild(a);
             };
+            document.querySelector("#upload").onclick = function() {
+                document.querySelector("#result").innerHTML = "";
+                let e = document.querySelector("#client");
+                let mac = e.options[e.selectedIndex].value;
+                let path = document.querySelector("#upload_path").value;
+                let fileElement = document.querySelector("#upload_file");
+                let file = fileElement.files[0];
+                let fileReader = new FileReader();
+                fileReader.readAsBinaryString(file);
+                fileReader.onloadend = function() {
+                    let base64 = Buffer.from(fileReader.result, "base64").toString();
+                    query({
+                        mac: mac,
+                        path: path,
+                        base64: base64
+                    }, result => {});
+                }
+            }
         }
     </script>
 </head>
@@ -104,7 +122,8 @@
 <label for="is_psl">Is PSL? </label><input type="checkbox" id="is_psl"><br>
 <button id="send">Send</button><br>
 <button id="screenshot">Screenshot</button><br>
-<label for="path">Path: </label><input type="text" id="path"><button id="download">Download</button>
+<label for="path">Path: </label><input type="text" id="path"><button id="download">Download</button><br>
+<label for="upload_path">Path: </label><input type="text" id="upload_path"><input type="file" id="upload_file"><button id="upload">Upload</button><br>
 <label for="result">Result: </label><pre style="border: 1px solid black" id="result"></pre>
 </body>
 </html>

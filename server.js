@@ -160,7 +160,7 @@ const httpServer = http.createServer((req, res) => {
                         }, handleError);
                     } else {
                         clients[query['mac']].writeFile(query['path'], query['base64'], result => {
-
+                            res.end("");
                         }, handleError);
                     }
                 } else if (typeof query['id'] !== "undefined") {
