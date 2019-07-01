@@ -91,7 +91,7 @@ const socketServer = net.createServer(socket => {
                     mac = obj['mac'];
                     os = obj['os'];
                     client = clients[mac] = new Client(socket, os, (data) => {
-                        socket.write(encodeURI(JSON.stringify(data)) + "\n");
+                        socket.write(JSON.stringify(data) + "\n");
                     });
                     console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
                 } else if (obj['type'] === "result") {
