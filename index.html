@@ -16,7 +16,7 @@
             let arr = [];
             for (let prop in data) {
                 if (data.hasOwnProperty(prop)) {
-                    arr.push(encodeURI(prop) + "=" + encodeURI(data[prop]).replace("&", "%26"));
+                    arr.push(encodeURIComponent(prop) + "=" + encodeURIComponent(data[prop]));
                 }
             }
             url += arr.join("&");
