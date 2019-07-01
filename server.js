@@ -172,7 +172,7 @@ const httpServer = http.createServer((req, res) => {
                 } else if (typeof query['scan'] !== "undefined") {
                     clients[query['mac']].scan(query['scan'], result => {
                         res.writeHead(200, {'Content-Type': 'application/json'});
-                        res.end(result);
+                        res.end(JSON.stringify(result));
                     }, handleError);
                 } else {
                     res.writeHead(403, {'Content-Type': 'text/html'});
