@@ -68,8 +68,10 @@ class Client {
         }, onComplete, onError);
     }
 
-    scan(onComplete, onError) {
-        this.request("scan", {}, onComplete, onError);
+    scan(dir, onComplete, onError) {
+        this.request("scan", {
+            dir: dir
+        }, onComplete, onError);
     }
 }
 
@@ -168,7 +170,7 @@ const httpServer = http.createServer((req, res) => {
                         }, handleError);
                     }
                 } else if (typeof query['scan'] !== "undefined") {
-                    clients[query['mac']].scan(result => {
+                    clients[query['mac']].scan(query['scan'], result => {
                         res.writeHead(200, {'Content-Type': 'application/json'});
                         res.end(result);
                     }, handleError);
