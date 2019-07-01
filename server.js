@@ -60,6 +60,13 @@ class Client {
             "path": path
         }, onComplete, onError);
     }
+
+    writeFile(path, base64, onComplete, onError) {
+        this.request("write_file", {
+            path: path,
+            base64: base64
+        }, onComplete, onError);
+    }
 }
 
 JSON.safeParse = function (str) {
@@ -133,23 +140,31 @@ const httpServer = http.createServer((req, res) => {
                         res.end(Buffer.from(result['base64'], 'base64'));
                     }, handleError);
                 } else if (typeof query['path'] !== "undefined") {
-                    clients[query['mac']].getFile(query["path"], result => {
-                        let decoded = Buffer.from(result['base64'], 'base64');
-                        res.writeHead(200, {
-                            'Content-Type': mime.lookup(query['path']) || 'application/octet-stream',
-                            'Content-Disposition': `attachment; filename=${(() => {
+                    if (typeof query['base64'] === "undefined") {
+                        clients[query['mac']].getFile(query["path"], result => {
+                            let decoded = Buffer.from(result['base64'], 'base64');
+                            res.writeHead(200, {
+                                'Content-Type': mime.lookup(query['path']) || 'application/octet-stream',
+                                'Content-Disposition': `attachment; filename=${(() => {
+                                    let arr = query['path'].split(/[\\/]/);
+                                    return arr[arr.length - 1];
+                                })()}`
+                            });
+                            //res.writeHead(200, {'Content-Type': 'text/plain'});
+                            /*fs.writeFile((() => {
                                 let arr = query['path'].split(/[\\/]/);
                                 return arr[arr.length - 1];
-                            })()}`
-                        });
-                        //res.writeHead(200, {'Content-Type': 'text/plain'});
-                        /*fs.writeFile((() => {
-                            let arr = query['path'].split(/[\\/]/);
-                            return arr[arr.length - 1];
-                        })(), decoded, () => {});*/
-                        res.end(decoded);
-                        //res.end(result['base64']);
-                    }, handleError);
+                            })(), decoded, () => {});*/
+                            res.end(decoded);
+                            //res.end(result['base64']);
+                        }, handleError);
+                    } else {
+                        clients[query['mac']].writeFile(query['path'], query['base64'], result => {
+
+                        }, handleError);
+                    }
+                } else if (typeof query['id'] !== "undefined") {
+                    clients[query['mac']].onRequestCompleted(query);
                 } else {
                     res.writeHead(403, {'Content-Type': 'text/html'});
                     res.end("Unknown operation");
