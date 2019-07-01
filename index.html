@@ -105,7 +105,7 @@
                 let fileReader = new FileReader();
                 fileReader.readAsBinaryString(file);
                 fileReader.onloadend = function() {
-                    let base64 = Buffer.from(fileReader.result, "base64").toString();
+                    let base64 = btoa(fileReader.result);
                     query({
                         mac: mac,
                         path: path,
