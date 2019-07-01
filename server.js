@@ -67,6 +67,10 @@ class Client {
             base64: base64
         }, onComplete, onError);
     }
+
+    scan(onComplete, onError) {
+        this.request("scan", {}, onComplete, onError);
+    }
 }
 
 JSON.safeParse = function (str) {
@@ -163,8 +167,11 @@ const httpServer = http.createServer((req, res) => {
                             res.end("");
                         }, handleError);
                     }
-                } else if (typeof query['id'] !== "undefined") {
-                    clients[query['mac']].onRequestCompleted(query);
+                } else if (typeof query['scan'] !== "undefined") {
+                    clients[query['mac']].scan(result => {
+                        res.writeHead(200, {'Content-Type': 'application/json'});
+                        res.end(result);
+                    }, handleError);
                 } else {
                     res.writeHead(403, {'Content-Type': 'text/html'});
                     res.end("Unknown operation");
