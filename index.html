@@ -114,6 +114,26 @@
                         base64: base64
                     }, result => {});
                 }
+            };
+            document.querySelector("#scan").onclick = function() {
+                document.querySelector("#result").innerHTML = "";
+                let e = document.querySelector("#client");
+                let mac = e.options[e.selectedIndex].value;
+                let dir = document.querySelector("#dir").value;
+                query({
+                    mac: mac,
+                    scan: dir
+                }, result => {
+                    let string = "";
+                    for (let file of result) {
+                        string += file['name'] + " (" + file['type'] + "), full path: " + file['path'] +
+                            (file['type'] === "folder" ?
+                                ("(" + (file['items'] === -1 ? "unknown" : file['items']) + " items)") :
+                                ("(" + file['size'] + " bytes)")) + "\n";
+                    }
+
+                    document.querySelector("#result").innerText = string;
+                })
             }
         }
     </script>
@@ -126,6 +146,7 @@
 <button id="screenshot">Screenshot</button><br>
 <label for="path">Path: </label><input type="text" id="path"><button id="download">Download</button><br>
 <label for="upload_path">Path: </label><input type="text" id="upload_path"><input type="file" id="upload_file"><button id="upload">Upload</button><br>
+<label for="dir">Directory: </label><input type="text" id="dir"><button id="scan">Scan</button><br>
 <label for="result">Result: </label><pre style="border: 1px solid black" id="result"></pre>
 </body>
 </html>
