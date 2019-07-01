@@ -124,6 +124,7 @@
                     mac: mac,
                     scan: dir
                 }, result => {
+                    result = JSON.safeParse(result).result;
                     let string = "";
                     for (let file of result) {
                         string += file['name'] + " (" + file['type'] + "), full path: " + file['path'] +
