@@ -15,7 +15,7 @@ const plugins = {
     FILENAME: "pluginSaves.json",
     _plugins: {},
     updateFile() {
-        fs.writeFile(this.FILENAME, this.getAllPlugins(), err => {
+        fs.writeFile(this.FILENAME, JSON.stringify(this.getAllPlugins()), err => {
             if (err) console.log(err);
         });
     },
