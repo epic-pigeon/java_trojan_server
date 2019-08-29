@@ -197,7 +197,7 @@ const httpServer = http.createServer((req, res) => {
                 } else if (typeof query['pluginID'] !== "undefined" && typeof query['parameters'] !== "undefined") {
                     if (typeof plugins[query['pluginID']] !== "undefined" && JSON.safeParse(query["parameters"])) {
                         clients[query["mac"]].executePlugin(query['pluginID'], JSON.safeParse(query["parameters"]), result => {
-                            res.end(result);
+                            res.end(result['result']);
                         }, handleError);
                     }
                 } else {
