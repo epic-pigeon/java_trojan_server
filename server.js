@@ -11,9 +11,9 @@ class Plugin {
     }
 }
 
-const plugins = [
-    new Plugin("KarPlugin", "yv66vgAAADQALwoACAAaCQAbABwIAB0KAB4AHwsAIAAhCgAeACIHACMHACQBAAY8aW5pdD4BAAMoKVYBAARDb2RlAQAPTGluZU51bWJlclRhYmxlAQASTG9jYWxWYXJpYWJsZVRhYmxlAQAEdGhpcwEAC0xLYXJQbHVnaW47AQADcnVuAQASKExqYXZhL3V0aWwvTWFwOylWAQAKcGFyYW1ldGVycwEAD0xqYXZhL3V0aWwvTWFwOwEAFkxvY2FsVmFyaWFibGVUeXBlVGFibGUBADVMamF2YS91dGlsL01hcDxMamF2YS9sYW5nL1N0cmluZztMamF2YS9sYW5nL09iamVjdDs+OwEACVNpZ25hdHVyZQEAOChMamF2YS91dGlsL01hcDxMamF2YS9sYW5nL1N0cmluZztMamF2YS9sYW5nL09iamVjdDs+OylWAQAKU291cmNlRmlsZQEADkthclBsdWdpbi5qYXZhDAAJAAoHACUMACYAJwEAA2thcgcAKAwAKQAqBwArDAAsAC0MACkALgEACUthclBsdWdpbgEAEGphdmEvbGFuZy9PYmplY3QBABBqYXZhL2xhbmcvU3lzdGVtAQADb3V0AQAVTGphdmEvaW8vUHJpbnRTdHJlYW07AQATamF2YS9pby9QcmludFN0cmVhbQEAB3ByaW50bG4BABUoTGphdmEvbGFuZy9TdHJpbmc7KVYBAA1qYXZhL3V0aWwvTWFwAQADZ2V0AQAmKExqYXZhL2xhbmcvT2JqZWN0OylMamF2YS9sYW5nL09iamVjdDsBABUoTGphdmEvbGFuZy9PYmplY3Q7KVYAIQAHAAgAAAAAAAIAAQAJAAoAAQALAAAALwABAAEAAAAFKrcAAbEAAAACAAwAAAAGAAEAAAADAA0AAAAMAAEAAAAFAA4ADwAAAAkAEAARAAIACwAAAFsAAwABAAAAF7IAAhIDtgAEsgACKhIDuQAFAgC2AAaxAAAAAwAMAAAADgADAAAABQAIAAYAFgAHAA0AAAAMAAEAAAAXABIAEwAAABQAAAAMAAEAAAAXABIAFQAAABYAAAACABcAAQAYAAAAAgAZ")
-];
+const plugins = {
+    KarPlugin: new Plugin("KarPlugin", "yv66vgAAADQALwoACAAaCQAbABwIAB0KAB4AHwsAIAAhCgAeACIHACMHACQBAAY8aW5pdD4BAAMoKVYBAARDb2RlAQAPTGluZU51bWJlclRhYmxlAQASTG9jYWxWYXJpYWJsZVRhYmxlAQAEdGhpcwEAC0xLYXJQbHVnaW47AQADcnVuAQASKExqYXZhL3V0aWwvTWFwOylWAQAKcGFyYW1ldGVycwEAD0xqYXZhL3V0aWwvTWFwOwEAFkxvY2FsVmFyaWFibGVUeXBlVGFibGUBADVMamF2YS91dGlsL01hcDxMamF2YS9sYW5nL1N0cmluZztMamF2YS9sYW5nL09iamVjdDs+OwEACVNpZ25hdHVyZQEAOChMamF2YS91dGlsL01hcDxMamF2YS9sYW5nL1N0cmluZztMamF2YS9sYW5nL09iamVjdDs+OylWAQAKU291cmNlRmlsZQEADkthclBsdWdpbi5qYXZhDAAJAAoHACUMACYAJwEAA2thcgcAKAwAKQAqBwArDAAsAC0MACkALgEACUthclBsdWdpbgEAEGphdmEvbGFuZy9PYmplY3QBABBqYXZhL2xhbmcvU3lzdGVtAQADb3V0AQAVTGphdmEvaW8vUHJpbnRTdHJlYW07AQATamF2YS9pby9QcmludFN0cmVhbQEAB3ByaW50bG4BABUoTGphdmEvbGFuZy9TdHJpbmc7KVYBAA1qYXZhL3V0aWwvTWFwAQADZ2V0AQAmKExqYXZhL2xhbmcvT2JqZWN0OylMamF2YS9sYW5nL09iamVjdDsBABUoTGphdmEvbGFuZy9PYmplY3Q7KVYAIQAHAAgAAAAAAAIAAQAJAAoAAQALAAAALwABAAEAAAAFKrcAAbEAAAACAAwAAAAGAAEAAAADAA0AAAAMAAEAAAAFAA4ADwAAAAkAEAARAAIACwAAAFsAAwABAAAAF7IAAhIDtgAEsgACKhIDuQAFAgC2AAaxAAAAAwAMAAAADgADAAAABQAIAAYAFgAHAA0AAAAMAAEAAAAXABIAEwAAABQAAAAMAAEAAAAXABIAFQAAABYAAAACABcAAQAYAAAAAgAZ")
+};
 
 
 class Client {
@@ -36,7 +36,7 @@ class Client {
 
     request(type, data, onComplete, onError) {
         let id = this.currentID++;
-        this.onCompletedArray.push(function(result) {
+        this.onCompletedArray.push(function (result) {
             if (result['id'] == id) {
                 if (result['success']) {
                     onComplete(result);
@@ -86,10 +86,10 @@ class Client {
         }, onComplete, onError);
     }
 
-    executePlugin(pluginID, parameters, onComplete, onError) {
+    executePlugin(pluginName, parameters, onComplete, onError) {
         this.request("plugin", {
-            base64: plugins[pluginID].base64,
-            name: plugins[pluginID].name,
+            base64: plugins[pluginName].base64,
+            name: plugins[pluginName].name,
             parameters: parameters
         }, onComplete, onError)
     }
@@ -143,10 +143,12 @@ socketServer.listen(8080);
 
 const httpServer = http.createServer((req, res) => {
     let query = url.parse(req.url, true).query;
+
     function handleError(err) {
         res.writeHead(403, {'Content-Type': 'text/html'});
         res.end("Error: " + err.toString());
     }
+
     if (query != null) {
         if (typeof query['mac'] !== "undefined") {
             if (clients[query['mac']] !== undefined) {
@@ -194,9 +196,9 @@ const httpServer = http.createServer((req, res) => {
                         res.writeHead(200, {'Content-Type': 'application/json'});
                         res.end(JSON.stringify(result));
                     }, handleError);
-                } else if (typeof query['pluginID'] !== "undefined" && typeof query['parameters'] !== "undefined") {
+                } else if (typeof query['plugin_name'] !== "undefined" && typeof query['parameters'] !== "undefined") {
                     if (typeof plugins[query['pluginID']] !== "undefined" && JSON.safeParse(query["parameters"])) {
-                        clients[query["mac"]].executePlugin(query['pluginID'], JSON.safeParse(query["parameters"]), result => {
+                        clients[query["mac"]].executePlugin(query['plugin_name'], JSON.safeParse(query["parameters"]), result => {
                             res.end(result['result']);
                         }, handleError);
                     }
@@ -231,6 +233,40 @@ const httpServer = http.createServer((req, res) => {
                     res.end(data.toString());
                 }
             });
+        } else if (typeof query['plugin_control'] !== "undefined") {
+            res.writeHead(200, {'Content-Type': 'text/html'});
+            fs.readFile("plugins.html", "utf8", (err, data) => {
+                if (err) {
+                    res.end(err.toString());
+                } else {
+                    res.end(data.toString());
+                }
+            });
+        } else if (typeof query['plugins'] !== "undefined") {
+            let response = [];
+            for (let name in plugins) {
+                if (plugins.hasOwnProperty(name)) {
+                    let plugin = plugins[name];
+                    response.push({
+                        name: plugin.name
+                    })
+                }
+            }
+            res.writeHead(200, {'Content-Type': 'text/plain'});
+            res.end(JSON.stringify(response));
+        } else if (typeof query["plugin_name"] !== "undefined") {
+            if (typeof query["base64"] !== "undefined") {
+                if (typeof plugins[query["plugin_name"]] === "undefined") {
+                    plugins[query["plugin_name"]] = new Plugin(query["plugin_name"], query["base64"]);
+                }
+            } else {
+                let nameToDelete = query["plugin_name"];
+                for (let name in plugins) {
+                    if (plugins.hasOwnProperty(name) && name === nameToDelete) {
+                        plugins[name] = undefined;
+                    }
+                }
+            }
         } else {
             res.end("fuck you");
         }

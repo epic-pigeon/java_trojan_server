@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Plugins management</title>
+    <script>
+        JSON.safeParse = function (str) {
+            try {
+                return this.parse(str);
+            } catch (e) {
+                return false;
+            }
+        };
+        function getUrl(data) {
+            let url = "http://3.89.196.174:6702/?";
+            let arr = [];
+            for (let prop in data) {
+                if (data.hasOwnProperty(prop)) {
+                    arr.push(encodeURIComponent(prop) + "=" + encodeURIComponent(data[prop]));
+                }
+            }
+            url += arr.join("&");
+            return url;
+        }
+        function query(data, callback) {
+            let url = getUrl(data);
+            console.log(url);
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET", url);
+            xhr.onreadystatechange = function () {
+                if(xhr.readyState === XMLHttpRequest.DONE) {
+                    if (typeof callback === "function") callback(xhr.responseText, xhr.status);
+                }
+            };
+            xhr.onerror = e => console.log(e);
+            xhr.send();
+        }
+        window.onload = function () {
+            query({plugins: "kar"}, data => {
+                let arr = JSON.safeParse(data);
+                if (arr) {
+                    let ul = document.getElementById("plugins");
+                    for (let plugin of arr) {
+                        let li = document.createElement("li");
+                        li.innerText = plugin.name;
+                        let button = document.createElement("input");
+                        button.setAttribute("type", "button");
+                        button.onclick = () => {
+                            query({plugin_name: plugin.name}, () => window.location.reload())
+                        };
+                        button.innerText = "delete";
+                        li.appendChild(button);
+                        ul.appendChild(li);
+                    }
+                } else alert("error")
+            });
+            document.getElementById("create_plugin").onclick = () => {
+                let file = document.getElementById("plugin_file").files[0];
+                let arr = file.name.split(".");
+                if (arr.length === 2 && arr[1] === "class") {
+                    let name = arr[0];
+                    let fileReader = new FileReader();
+                    fileReader.readAsBinaryString(file);
+                    fileReader.onloadend = () => {
+                        query({
+                            plugin_name: name,
+                            base64: btoa(fileReader.result)
+                        }, () => {
+                            window.location.reload()
+                        })
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+<ul id="plugins">
+
+</ul>
+<label for="create_plugin">Create plugin: </label><input type="file" id="plugin_file"><input type="button" id="create_plugin">
+</body>
+</html>
