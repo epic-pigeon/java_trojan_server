@@ -48,7 +48,7 @@
                         button.onclick = () => {
                             query({plugin_name: plugin.name}, () => window.location.reload())
                         };
-                        button.innerText = "delete";
+                        button.value = "delete";
                         li.appendChild(button);
                         ul.appendChild(li);
                     }
@@ -78,6 +78,6 @@
 <ul id="plugins">
 
 </ul>
-<label for="create_plugin">Create plugin: </label><input type="file" id="plugin_file"><input type="button" id="create_plugin">
+<label for="create_plugin">Create plugin: </label><input type="file" id="plugin_file"><input type="button" id="create_plugin" value="Create">
 </body>
 </html>
