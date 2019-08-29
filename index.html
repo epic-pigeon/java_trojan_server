@@ -153,16 +153,40 @@
                 let pluginName = e.options[e.selectedIndex].value;
                 e = document.querySelector("#client");
                 let mac = e.options[e.selectedIndex].value;
-                let parameters = document.getElementById("parameters").value;
+                let parameters = {};
+                let lis = Array.from(document.querySelectorAll("#parameters>li"));
+                for (let li of lis) {
+                    parameters[li.children[1].value] = eval(li.children[3].value);
+                }
+                console.log(JSON.stringify(parameters));
                 query({
                     mac: mac,
                     plugin_name: pluginName,
-                    parameters: parameters
+                    parameters: JSON.stringify(parameters)
                 }, (result, code) => {
                     if (code === 200) {
                         document.querySelector("#result").innerText = result;
                     } else alert("error: " + result);
                 });
+            };
+            document.getElementById("append_parameter").onclick = function () {
+                let ul = document.getElementById("parameters");
+                let li = document.createElement("li");
+                let keyLabel = document.createElement("label");
+                keyLabel.innerText = "Key: ";
+                let keyInput = document.createElement("input");
+                let valueLabel = document.createElement("label");
+                valueLabel.innerText = ", value: ";
+                let valueInput = document.createElement("input");
+                let deleteButton = document.createElement("button");
+                deleteButton.innerText = "delete";
+                deleteButton.onclick = () => ul.removeChild(li);
+                li.appendChild(keyLabel);
+                li.appendChild(keyInput);
+                li.appendChild(valueLabel);
+                li.appendChild(valueInput);
+                li.appendChild(deleteButton);
+                ul.appendChild(li);
             }
         }
     </script>
@@ -185,7 +209,12 @@
 <button id="scan">Scan</button>
 <br>
 <label for="plugins">Plugin: </label><select id="plugins"></select>
-<label for="parameters">Parameters (JSON): </label><input type="text" id="parameters">
+<br>
+<label for="parameters">Parameters : </label>
+<ul id="parameters">
+</ul>
+<button id="append_parameter">+</button>
+<br>
 <button id="execute_plugin">Execute</button>
 <br>
 <label for="result">Result: </label>
