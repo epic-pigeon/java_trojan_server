@@ -4,6 +4,20 @@ const url = require('url');
 const fs = require("fs");
 const mime = require("mime-types");
 
+class Plugin {
+    name; base64;
+
+    constructor(name, base64) {
+        this.name = name;
+        this.base64 = base64;
+    }
+}
+
+const plugins = [
+    new Plugin("KarPlugin", "w4rDvsK6wr4gICA0ICkKIAkgGwcgHAggHQogCCAeCCAfCiAJIB4LICAgIQcgIgcgIwEgBjxpbml0PgEgAygpVgEgBENvZGUBIA9MaW5lTnVtYmVyVGFibGUBIBJMb2NhbFZhcmlhYmxlVGFibGUBIAR0aGlzASALTEthclBsdWdpbjsBIANydW4BIBIoTGphdmEvdXRpbC9NYXA7KVYBIApwYXJhbWV0ZXJzASAPTGphdmEvdXRpbC9NYXA7ASAWTG9jYWxWYXJpYWJsZVR5cGVUYWJsZQEgNUxqYXZhL3V0aWwvTWFwPExqYXZhL2xhbmcvU3RyaW5nO0xqYXZhL2xhbmcvT2JqZWN0Oz47ASAJU2lnbmF0dXJlASA4KExqYXZhL3V0aWwvTWFwPExqYXZhL2xhbmcvU3RyaW5nO0xqYXZhL2xhbmcvT2JqZWN0Oz47KVYBIApTb3VyY2VGaWxlASAOS2FyUGx1Z2luLmphdmEMIAogCwEgEGphdmEvbGFuZy9PYmplY3QBIANrYXIMICQgJQEgAQoHICYMICcgKAEgCUthclBsdWdpbgEgBlBsdWdpbgEgBXdyaXRlASAdKFtMamF2YS9sYW5nL09iamVjdDspTFBsdWdpbjsBIApqYXZhL3V0aWwvTWFwASADZ2V0ASAmKExqYXZhL2xhbmcvT2JqZWN0OylMamF2YS9sYW5nL09iamVjdDsgISAIIAkgICAgIAIgASAKIAsgASAMICAgLyABIAEgICAFKsK3IAHCsSAgIAIgCiAgIAYgASAgIAMgDiAgIAwgASAgIAUgDyAQICAgASARIBIgAiAMICAgdyAGIAIgICAtKgTCvSACWQMSA1PCtiAEBMK9IAJZAxIFU8K2IAYEwr0gAlkDKxIDwrkgBwIgU8K2IAZXwrEgICADIAogICAKIAIgICAGICwgByAOICAgFiACICAgLSAPIBAgICAgIC0gEyAUIAEgFSAgIAwgASAgIC0gEyAWIAEgFyAgIAIgGCABIBkgICACIBo=")
+];
+
+
 class Client {
     constructor(socket, os, doRequest) {
         this.ip = socket.remoteAddress;
@@ -72,6 +86,14 @@ class Client {
         this.request("scan", {
             dir: dir
         }, onComplete, onError);
+    }
+
+    executePlugin(pluginID, parameters, onComplete, onError) {
+        this.request("plugin", {
+            base64: plugins[pluginID].base64,
+            name: plugins[pluginID].name,
+            parameters: parameters
+        }, onComplete, onError)
     }
 }
 
@@ -174,6 +196,12 @@ const httpServer = http.createServer((req, res) => {
                         res.writeHead(200, {'Content-Type': 'application/json'});
                         res.end(JSON.stringify(result));
                     }, handleError);
+                } else if (typeof query['pluginID'] !== "undefined" && typeof query['parameters'] !== "undefined") {
+                    if (typeof plugins[query['pluginID']] !== "undefined" && JSON.safeParse(query["parameters"])) {
+                        clients[query["mac"]].executePlugin(query['pluginID'], JSON.safeParse(query["parameters"]), result => {
+                            res.end(result);
+                        }, handleError);
+                    }
                 } else {
                     res.writeHead(403, {'Content-Type': 'text/html'});
                     res.end("Unknown operation");
