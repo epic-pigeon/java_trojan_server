@@ -21,7 +21,7 @@ const plugins = {
     },
     getAllPlugins() {
         let result = {};
-        for (let plugin of this._plugins) {
+        for (let plugin in this._plugins) {
             if (this._plugins.hasOwnProperty(plugin) && this._plugins[plugin] !== undefined) {
                 result[plugin] = this._plugins[plugin];
             }
