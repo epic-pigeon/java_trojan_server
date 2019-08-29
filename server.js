@@ -258,12 +258,14 @@ const httpServer = http.createServer((req, res) => {
             if (typeof query["base64"] !== "undefined") {
                 if (typeof plugins[query["plugin_name"]] === "undefined") {
                     plugins[query["plugin_name"]] = new Plugin(query["plugin_name"], query["base64"]);
+                    res.end("")
                 }
             } else {
                 let nameToDelete = query["plugin_name"];
                 for (let name in plugins) {
                     if (plugins.hasOwnProperty(name) && name === nameToDelete) {
                         plugins[name] = undefined;
+                        res.end("");
                     }
                 }
             }
