@@ -15,6 +15,49 @@ const plugins = {
     KarPlugin: new Plugin("KarPlugin", "yv66vgAAADQALwoACAAaCQAbABwIAB0KAB4AHwsAIAAhCgAeACIHACMHACQBAAY8aW5pdD4BAAMoKVYBAARDb2RlAQAPTGluZU51bWJlclRhYmxlAQASTG9jYWxWYXJpYWJsZVRhYmxlAQAEdGhpcwEAC0xLYXJQbHVnaW47AQADcnVuAQASKExqYXZhL3V0aWwvTWFwOylWAQAKcGFyYW1ldGVycwEAD0xqYXZhL3V0aWwvTWFwOwEAFkxvY2FsVmFyaWFibGVUeXBlVGFibGUBADVMamF2YS91dGlsL01hcDxMamF2YS9sYW5nL1N0cmluZztMamF2YS9sYW5nL09iamVjdDs+OwEACVNpZ25hdHVyZQEAOChMamF2YS91dGlsL01hcDxMamF2YS9sYW5nL1N0cmluZztMamF2YS9sYW5nL09iamVjdDs+OylWAQAKU291cmNlRmlsZQEADkthclBsdWdpbi5qYXZhDAAJAAoHACUMACYAJwEAA2thcgcAKAwAKQAqBwArDAAsAC0MACkALgEACUthclBsdWdpbgEAEGphdmEvbGFuZy9PYmplY3QBABBqYXZhL2xhbmcvU3lzdGVtAQADb3V0AQAVTGphdmEvaW8vUHJpbnRTdHJlYW07AQATamF2YS9pby9QcmludFN0cmVhbQEAB3ByaW50bG4BABUoTGphdmEvbGFuZy9TdHJpbmc7KVYBAA1qYXZhL3V0aWwvTWFwAQADZ2V0AQAmKExqYXZhL2xhbmcvT2JqZWN0OylMamF2YS9sYW5nL09iamVjdDsBABUoTGphdmEvbGFuZy9PYmplY3Q7KVYAIQAHAAgAAAAAAAIAAQAJAAoAAQALAAAALwABAAEAAAAFKrcAAbEAAAACAAwAAAAGAAEAAAADAA0AAAAMAAEAAAAFAA4ADwAAAAkAEAARAAIACwAAAFsAAwABAAAAF7IAAhIDtgAEsgACKhIDuQAFAgC2AAaxAAAAAwAMAAAADgADAAAABQAIAAYAFgAHAA0AAAAMAAEAAAAXABIAEwAAABQAAAAMAAEAAAAXABIAFQAAABYAAAACABcAAQAYAAAAAgAZ")
 };
 
+const plugins = {
+    FILENAME: "pluginSaves.json",
+    _plugins: {},
+    updateFile() {
+        fs.writeFile(this.FILENAME, this.getAllPlugins(), err => {
+            if (err) console.log(err);
+        });
+    },
+    getAllPlugins() {
+        let result = {};
+        for (let plugin of this._plugins) {
+            if (this._plugins.hasOwnProperty(plugin) && this._plugins[plugin] !== undefined) {
+                result[plugin] = this._plugins[plugin];
+            }
+        }
+        return result;
+    },
+    addPlugin(name, base64) {
+        if (this._plugins[name] === undefined) {
+            this._plugins[name] = new Plugin(name, base64);
+        }
+        this.updateFile();
+    },
+    deletePlugin(name) {
+        if (this._plugins[name] !== undefined) {
+            this._plugins[name] = undefined;
+        }
+        this.updateFile();
+    },
+    restorePlugins() {
+        fs.readFile(this.FILENAME, (err, data) => {
+            if (err) console.log(err); else {
+                this._plugins = JSON.safeParse(data);
+                if (!this._plugins) this._plugins = {};
+            }
+        })
+    },
+    getPlugin(name) {
+        return this._plugins[name];
+    }
+};
+
+plugins.restorePlugins();
 
 class Client {
     constructor(socket, os, doRequest) {
@@ -88,8 +131,8 @@ class Client {
 
     executePlugin(pluginName, parameters, onComplete, onError) {
         this.request("plugin", {
-            base64: plugins[pluginName].base64,
-            name: plugins[pluginName].name,
+            base64: plugins.getPlugin(pluginName).base64,
+            name: plugins.getPlugin(pluginName).name,
             parameters: parameters
         }, onComplete, onError)
     }
@@ -197,7 +240,7 @@ const httpServer = http.createServer((req, res) => {
                         res.end(JSON.stringify(result));
                     }, handleError);
                 } else if (typeof query['plugin_name'] !== "undefined" && typeof query['parameters'] !== "undefined") {
-                    if (typeof plugins[query['plugin_name']] !== "undefined" && JSON.safeParse(query["parameters"])) {
+                    if (typeof plugins.getPlugin(query['plugin_name']) !== "undefined" && JSON.safeParse(query["parameters"])) {
                         clients[query["mac"]].executePlugin(query['plugin_name'], JSON.safeParse(query["parameters"]), result => {
                             res.end(result['result']);
                         }, handleError);
@@ -244,9 +287,10 @@ const httpServer = http.createServer((req, res) => {
             });
         } else if (typeof query['plugins'] !== "undefined") {
             let response = [];
-            for (let name in plugins) {
-                if (plugins.hasOwnProperty(name) && plugins[name] !== undefined) {
-                    let plugin = plugins[name];
+            let allPlugins = plugins.getAllPlugins();
+            for (let name in allPlugins) {
+                if (allPlugins.hasOwnProperty(name) && allPlugins[name] !== undefined) {
+                    let plugin = allPlugins[name];
                     response.push({
                         name: plugin.name
                     })
@@ -256,18 +300,14 @@ const httpServer = http.createServer((req, res) => {
             res.end(JSON.stringify(response));
         } else if (typeof query["plugin_name"] !== "undefined") {
             if (typeof query["base64"] !== "undefined") {
-                if (typeof plugins[query["plugin_name"]] === "undefined") {
-                    plugins[query["plugin_name"]] = new Plugin(query["plugin_name"], query["base64"]);
+                if (typeof plugins.getPlugin(query["plugin_name"]) === "undefined") {
+                    plugins.addPlugin(query["plugin_name"], query["base64"]);
                     res.end("")
                 }
             } else {
                 let nameToDelete = query["plugin_name"];
-                for (let name in plugins) {
-                    if (plugins.hasOwnProperty(name) && name === nameToDelete) {
-                        plugins[name] = undefined;
-                        res.end("");
-                    }
-                }
+                plugins.deletePlugin(nameToDelete);
+                res.end("");
             }
         } else {
             res.end("fuck you");
