@@ -5,8 +5,6 @@ const fs = require("fs");
 const mime = require("mime-types");
 
 class Plugin {
-    name; base64;
-
     constructor(name, base64) {
         this.name = name;
         this.base64 = base64;
