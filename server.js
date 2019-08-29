@@ -245,7 +245,7 @@ const httpServer = http.createServer((req, res) => {
         } else if (typeof query['plugins'] !== "undefined") {
             let response = [];
             for (let name in plugins) {
-                if (plugins.hasOwnProperty(name)) {
+                if (plugins.hasOwnProperty(name) && plugins[name] !== undefined) {
                     let plugin = plugins[name];
                     response.push({
                         name: plugin.name
