@@ -132,6 +132,10 @@ class Client {
             parameters: parameters
         }, onComplete, onError)
     }
+
+    heartbeat(onComplete, onError) {
+        this.request("heartbeat", {}, onComplete, onError)
+    }
 }
 
 JSON.safeParse = function (str) {
@@ -145,7 +149,7 @@ JSON.safeParse = function (str) {
 const clients = {};
 
 const socketServer = net.createServer(socket => {
-    let mac, client, os, fullData = "";
+    let mac, client, os, fullData = "", timerID = undefined;
     socket.on('data', chunk => {
         if (chunk.toString().charAt(chunk.toString().length - 1) === "}") {
             fullData += chunk.toString();
@@ -158,6 +162,9 @@ const socketServer = net.createServer(socket => {
                     client = clients[mac] = new Client(socket, os, (data) => {
                         socket.write(JSON.stringify(data) + "\n");
                     });
+                    timerID = setInterval(() => {
+                        client.heartbeat(() => {}, () => {})
+                    }, 10000);
                     console.log("Client " + mac + " connected!\nOS: " + os + "\nIP address: " + client.ip + ":" + client.port + "\n");
                 } else if (obj['type'] === "result") {
                     client.onRequestCompleted(obj);
@@ -175,6 +182,7 @@ const socketServer = net.createServer(socket => {
             clients[mac] = undefined;
             console.log("Client " + mac + " disconnected!");
         }
+        if (timerID !== undefined) clearInterval(timerID);
     }
 });
 
