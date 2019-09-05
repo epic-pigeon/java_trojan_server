@@ -45,7 +45,7 @@
                     for (let client of arr) {
                         let option = document.createElement("option");
                         option.value = client.mac;
-                        option.innerText = client.mac + " " + client.os + " (" + client.ip + ":" + client.port + ")";
+                        option.innerText = "\"" + client.label + "\" " + client.mac + " " + client.os + " (" + client.ip + ":" + client.port + ")";
                         document.querySelector("#client").appendChild(option);
                     }
                 }
@@ -187,6 +187,20 @@
                 li.appendChild(valueInput);
                 li.appendChild(deleteButton);
                 ul.appendChild(li);
+            };
+            document.getElementById("change_label").onclick = function() {
+                let e = document.querySelector("#client");
+                let mac = e.options[e.selectedIndex].value;
+                let label = document.getElementById("label").value;
+                query({
+                    mac: mac, label: label
+                }, (result, code) => {
+                    if (code === 204) {
+                        document.getElementById("result").innerText = "Label changed to " + label;
+                    } else {
+                        alert("error: " + result);
+                    }
+                })
             }
         }
     </script>
@@ -217,6 +231,7 @@
 <br>
 <button id="execute_plugin">Execute</button>
 <br>
+<label for="label">Change label:</label><input type="text" id="label"><button id="change_label">Change</button><br>
 <label for="result">Result: </label>
 <pre style="border: 1px solid black" id="result"></pre>
 </body>

@@ -148,6 +148,39 @@ JSON.safeParse = function (str) {
 
 const clients = {};
 
+const Labels = {
+    FILENAME: "labels.json",
+    _labels: {},
+    getLabels: function () {
+        let result = {};
+        for (let key in this._labels) {
+            if (this._labels.hasOwnProperty(key) && this._labels[key] !== undefined) {
+                result[key] = this._labels[key];
+            }
+        }
+        return result;
+    },
+    addLabel: function (name, value) {
+        this._labels[name] = value;
+        this.saveLabels();
+    },
+    getLabel: function (name) {
+        return this._labels[name];
+    },
+    saveLabels() {
+        fs.writeFile(this.FILENAME, JSON.stringify(this.getLabels()), () => {});
+    },
+    loadLabels() {
+        fs.readFile(this.FILENAME, (err, data) => {
+            if (err) console.log(err); else {
+                this._labels = JSON.safeParse(data) || {};
+            }
+        })
+    }
+};
+
+Labels.loadLabels();
+
 const socketServer = net.createServer(socket => {
     let mac, client, os, fullData = "", timerID = undefined;
     socket.on('data', chunk => {
@@ -249,6 +282,10 @@ const httpServer = http.createServer((req, res) => {
                             res.end(result['result']);
                         }, handleError);
                     }
+                } else if (typeof query["label"] !== "undefined") {
+                    Labels.addLabel(query["mac"], query["label"]);
+                    res.writeHead(204, {});
+                    res.end("");
                 } else {
                     res.writeHead(403, {'Content-Type': 'text/html'});
                     res.end("Unknown operation");
@@ -267,6 +304,7 @@ const httpServer = http.createServer((req, res) => {
                         ip: clients[mac].ip,
                         port: clients[mac].port,
                         os: clients[mac].os,
+                        label: Labels.getLabel(mac) || "kar"
                     });
                 }
             }
