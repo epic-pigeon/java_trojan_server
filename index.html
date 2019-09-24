@@ -13,7 +13,11 @@
         };
 
         function getUrl(data) {
-            let url = "http://3.89.196.174:6702/?";
+            return "http://3.89.196.174:6702/" + (typeof data === "object" ? "?" + getUrlencoded(data) : "");
+        }
+
+        function getUrlencoded(data) {
+            let url = "";
             let arr = [];
             for (let prop in data) {
                 if (data.hasOwnProperty(prop)) {
@@ -24,9 +28,8 @@
             return url;
         }
 
-        function query(data, callback) {
+        function getQuery(data, callback) {
             let url = getUrl(data);
-            console.log(url);
             let xhr = new XMLHttpRequest();
             xhr.open("GET", url);
             xhr.onreadystatechange = function () {
@@ -36,6 +39,24 @@
             };
             xhr.onerror = e => console.log(e);
             xhr.send();
+        }
+
+        function postQuery(data, callback) {
+            let url = getUrl();
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", url, true);
+            http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (typeof callback === "function") callback(xhr.responseText, xhr.status);
+                }
+            };
+            xhr.onerror = e => console.log(e);
+            xhr.send(getUrlencoded(data));
+        }
+
+        function query(data, callback, post) {
+            return post ? postQuery(data, callback) : getQuery(data, callback);
         }
 
         window.onload = function () {
@@ -124,7 +145,7 @@
                         path: path,
                         base64: base64
                     }, result => {
-                    });
+                    }, true);
                 }
             };
             document.querySelector("#scan").onclick = function () {
